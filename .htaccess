@@ -1,0 +1,14 @@
+# Impedir el listado público de carpetas y archivos
+Options -Indexes
+
+# Proteger archivos sensibles del sistema
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Proteger la carpeta config y vendor
+<FilesMatch "composer\.(json|lock)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,18 @@
+# Dependencias de Composer (¡Muy importante! No se suben al repo, se descargan en el servidor)
+/vendor/
+
+# Archivos de configuración con credenciales o contraseñas locales
+/config/conexion.php
+.env
+
+# Archivos del sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Carpetas de caché, logs o archivos temporales de la aplicación
+/storage/logs/
+/temp/
+/cache/
+*.log
