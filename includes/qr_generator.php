@@ -6,7 +6,9 @@ function obtenerRutaQR($token) {
     $proyecto = "sistema_certificaciones";
     
     // Configurar lang=zh por defecto en el enlace del QR
-    $baseUrl = "http://" . $ipLocal . "/" . $proyecto . "/verificar.php"; 
+    // Usar tu dominio oficial en producción con HTTPS
+    $baseUrl = "https://qtecheni.com/verificar.php";
+    //$baseUrl = "http://" . $ipLocal . "/" . $proyecto . "/verificar.php"; 
     $qrUrl   = $baseUrl . "?token=" . urlencode($token) . "&lang=zh";
     
     $dirQR = __DIR__ . '/../assets/qr/';
