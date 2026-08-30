@@ -68,3 +68,10 @@ if (isset($families['noto-sans-sc'])) {
     echo "Familias disponibles actualmente:\n";
     print_r(array_keys($families));
 }
+
+echo "\n== Inspeccionando 'noto sans sc' (auto-detectada) ==\n";
+if (isset($families['noto sans sc'])) {
+    print_r($families['noto sans sc']);
+} else {
+    echo "No existe con ese key tampoco.\n";
+}
