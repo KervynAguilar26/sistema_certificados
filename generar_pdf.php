@@ -120,7 +120,7 @@ $options->set('chroot', __DIR__);
 
 $dompdf = new Dompdf($options);
 
-$fontFamily = ($lang === 'zh') ? "'NotoSansSC-VariableFont_wght', 'DejaVu Sans', sans-serif" : "'Helvetica', 'Arial', sans-serif";
+$fontFamily = ($lang === 'zh') ? "'Noto Sans SC', 'SimSun', 'DejaVu Sans', sans-serif" : "'Helvetica', 'Arial', sans-serif";
 $lblScan    = ($lang === 'zh') ? '扫码验证' : (($lang === 'en') ? 'Scan to verify' : 'Escanear para verificar');
 
 if (!empty($dirFabTrad)) {
