@@ -11,7 +11,7 @@ use Dompdf\Options;
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isFontSubsettingEnabled', true);
+$options->set('isFontSubsettingEnabled', false);
 $options->set('chroot', __DIR__);
 
 $dompdf = new Dompdf($options);
