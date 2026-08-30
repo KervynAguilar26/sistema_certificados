@@ -30,11 +30,11 @@ $ownerInfo = function_exists('posix_getpwuid') ? posix_getpwuid($ownerId) : null
 echo $ownerInfo ? $ownerInfo['name'] : $ownerId;
 echo "\n\n";
 
-$regular = __DIR__ . '/fonts/NotoSansSC-Regular.otf';
-$bold    = __DIR__ . '/fonts/NotoSansSC-Bold.otf';
+$regular = __DIR__ . '/fonts/wqy-zenhei.ttf';
+$bold    = __DIR__ . '/fonts/wqy-zenhei.ttf'; // WQY Zen Hei no trae bold real; reutilizamos el regular
 
-if (!file_exists($regular) || !file_exists($bold)) {
-    die("ERROR: no se encontraron los .otf en " . __DIR__ . "/fonts/. Copia los archivos ahí primero.\n");
+if (!file_exists($regular)) {
+    die("ERROR: no se encontró " . $regular . ". Copia el archivo ahí primero.\n");
 }
 echo "Regular existe: sí (" . filesize($regular) . " bytes)\n";
 echo "Bold existe: sí (" . filesize($bold) . " bytes)\n\n";
@@ -54,24 +54,17 @@ function intentarRegistro($fontMetrics, $style, $file, $label) {
     }
 }
 
-intentarRegistro($fontMetrics, ['family' => 'noto-sans-sc', 'style' => 'normal', 'weight' => 'normal'], $regular, 'normal');
-intentarRegistro($fontMetrics, ['family' => 'noto-sans-sc', 'style' => 'normal', 'weight' => 'bold'], $bold, 'bold');
-intentarRegistro($fontMetrics, ['family' => 'noto-sans-sc', 'style' => 'italic', 'weight' => 'normal'], $regular, 'italic');
-intentarRegistro($fontMetrics, ['family' => 'noto-sans-sc', 'style' => 'italic', 'weight' => 'bold'], $bold, 'bold_italic');
+intentarRegistro($fontMetrics, ['family' => 'wqy-zenhei', 'style' => 'normal', 'weight' => 'normal'], $regular, 'normal');
+intentarRegistro($fontMetrics, ['family' => 'wqy-zenhei', 'style' => 'normal', 'weight' => 'bold'], $bold, 'bold');
+intentarRegistro($fontMetrics, ['family' => 'wqy-zenhei', 'style' => 'italic', 'weight' => 'normal'], $regular, 'italic');
+intentarRegistro($fontMetrics, ['family' => 'wqy-zenhei', 'style' => 'italic', 'weight' => 'bold'], $bold, 'bold_italic');
 
 echo "\n== Resultado final ==\n";
 $families = $fontMetrics->getFontFamilies();
-if (isset($families['noto-sans-sc'])) {
-    print_r($families['noto-sans-sc']);
+if (isset($families['wqy-zenhei'])) {
+    print_r($families['wqy-zenhei']);
 } else {
-    echo "⚠️ Sigue sin aparecer 'noto-sans-sc'.\n";
+    echo "⚠️ Sigue sin aparecer 'wqy-zenhei'.\n";
     echo "Familias disponibles actualmente:\n";
     print_r(array_keys($families));
-}
-
-echo "\n== Inspeccionando 'noto sans sc' (auto-detectada) ==\n";
-if (isset($families['noto sans sc'])) {
-    print_r($families['noto sans sc']);
-} else {
-    echo "No existe con ese key tampoco.\n";
 }
