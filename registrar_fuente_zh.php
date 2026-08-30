@@ -30,11 +30,11 @@ $ownerInfo = function_exists('posix_getpwuid') ? posix_getpwuid($ownerId) : null
 echo $ownerInfo ? $ownerInfo['name'] : $ownerId;
 echo "\n\n";
 
-$regular = '/tmp/NotoSansSC-Regular.otf';
-$bold    = '/tmp/NotoSansSC-Bold.otf';
+$regular = __DIR__ . '/fonts/NotoSansSC-Regular.otf';
+$bold    = __DIR__ . '/fonts/NotoSansSC-Bold.otf';
 
 if (!file_exists($regular) || !file_exists($bold)) {
-    die("ERROR: no se encontraron los .otf en /tmp.\n");
+    die("ERROR: no se encontraron los .otf en " . __DIR__ . "/fonts/. Copia los archivos ahí primero.\n");
 }
 echo "Regular existe: sí (" . filesize($regular) . " bytes)\n";
 echo "Bold existe: sí (" . filesize($bold) . " bytes)\n\n";
