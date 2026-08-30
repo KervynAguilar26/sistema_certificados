@@ -1,27 +1,19 @@
 <?php
 // config/traductor.php
 
-/**
- * Traduce un texto dinámicamente al idioma destino usando el motor de traducción de Google.
- *
- * @param string $texto Texto original a traducir.
- * @param string $idiomaDestino Código del idioma (es, en, zh-CN, fr, pt, etc.).
- * @return string Texto traducido.
- */
 function traducirTexto($texto, $idiomaDestino = 'es') {
-    // Si el texto está vacío o el idioma es español predeterminado, no se procesa
-    if (empty(trim($texto)) || $idiomaDestino === 'es') {
+    if (empty(trim($texto))) {
         return $texto;
     }
 
-    // Mapeo especial para códigos de idioma
+    // Normalización de códigos de idioma para Google API
     if ($idiomaDestino === 'zh') {
-        $idiomaDestino = 'zh-CN'; // Chino simplificado
+        $idiomaDestino = 'zh-CN';
     }
 
+    // Petición a la API de Google Translate
     $url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" . $idiomaDestino . "&dt=t&q=" . urlencode($texto);
 
-    // Ejecutar petición HTTP
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -41,6 +33,6 @@ function traducirTexto($texto, $idiomaDestino = 'es') {
         }
     }
 
-    return $texto; // Si falla la conexión, retorna el texto original
+    return $texto;
 }
 ?>
