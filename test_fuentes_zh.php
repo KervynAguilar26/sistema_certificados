@@ -11,7 +11,7 @@ use Dompdf\Options;
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isFontSubsettingEnabled', false);
+$options->set('isFontSubsettingEnabled', true);
 $options->set('chroot', __DIR__);
 
 $dompdf = new Dompdf($options);
@@ -23,16 +23,16 @@ $html = <<<HTML
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
     body { font-size: 20px; }
-    .otf { font-family: 'noto-sans-sc', sans-serif; margin-bottom: 20px; }
+    .otf { font-family: 'wqy-zenhei', sans-serif; margin-bottom: 20px; }
     .ttf { font-family: 'Noto Sans SC', sans-serif; margin-bottom: 20px; }
     .label { font-weight: bold; color: #333; font-size: 12px; }
 </style>
 </head>
 <body>
-    <div class="label">Usando 'noto-sans-sc' (OTF registrado hoy):</div>
+    <div class="label">Usando 'wqy-zenhei' (TTF nuevo, subsetting ACTIVADO):</div>
     <div class="otf">制造商: 产品 商标 测试文字 中文</div>
 
-    <div class="label">Usando 'noto-sans-sc' EN NEGRITA (bold):</div>
+    <div class="label">Usando 'wqy-zenhei' EN NEGRITA (bold):</div>
     <div class="otf" style="font-weight: bold;">制造商: 产品 商标 测试文字 中文</div>
 
     <div class="label">Usando 'Noto Sans SC' (TTF que ya existía):</div>
