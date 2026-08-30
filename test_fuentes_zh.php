@@ -32,6 +32,9 @@ $html = <<<HTML
     <div class="label">Usando 'noto-sans-sc' (OTF registrado hoy):</div>
     <div class="otf">制造商: 产品 商标 测试文字 中文</div>
 
+    <div class="label">Usando 'noto-sans-sc' EN NEGRITA (bold):</div>
+    <div class="otf" style="font-weight: bold;">制造商: 产品 商标 测试文字 中文</div>
+
     <div class="label">Usando 'Noto Sans SC' (TTF que ya existía):</div>
     <div class="ttf">制造商: 产品 商标 测试文字 中文</div>
 </body>
