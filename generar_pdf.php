@@ -1,5 +1,5 @@
 <?php
-// generar_pdf.php - Versión Definitiva con Traducción Integral y Fuentes Ajustadas
+// generar_pdf.php - Versión con Traducción Total de Rangos y Ajuste de Hojas Limpio
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/conexion.php';
 require_once __DIR__ . '/config/traductor.php';
@@ -62,7 +62,7 @@ if ($lang === 'en') {
     $txtOfWord   = 'de';
 }
 
-// PROCESAMIENTO Y FILTRADO DE MODELOS
+// PROCESAMIENTO DE MODELOS
 $modelos_raw = array_map('trim', explode(',', $cert['modelos_adjuntos']));
 $modelos_array = [];
 foreach ($modelos_raw as $mod) {
@@ -75,11 +75,33 @@ foreach ($modelos_raw as $mod) {
     }
 }
 
-// VALIDACIÓN DE MÁS DE 10 MODELOS
-$mostrar_anexo   = count($modelos_array) > 10;
-$totalPaginas    = $mostrar_anexo ? '02' : '01';
-$string_modelos  = implode(', ', $modelos_array);
-$txtModels       = $mostrar_anexo ? traducirTexto('Ver Anexo Adjunto (Página 2)', $lang) : $string_modelos;
+// CAPACIDAD POR HOJA DE ANEXO
+$modelos_por_pagina = 270;
+$total_modelos = count($modelos_array);
+
+if ($total_modelos > 10) {
+    $bloques_anexo = array_chunk($modelos_array, $modelos_por_pagina);
+    $cant_paginas_anexo = count($bloques_anexo);
+    $totalPaginasInt = 1 + $cant_paginas_anexo;
+    $totalPaginas = str_pad($totalPaginasInt, 2, '0', STR_PAD_LEFT);
+
+    if ($cant_paginas_anexo > 1) {
+        $hastaPagina = $totalPaginasInt;
+        if ($lang === 'zh') {
+            $txtModels = "见附件(第2至{$hastaPagina}页)";
+        } elseif ($lang === 'en') {
+            $txtModels = "See Attached Annex (Pages 2 to {$hastaPagina})";
+        } else {
+            $txtModels = "Ver Anexo Adjunto (Páginas 2 a {$hastaPagina})";
+        }
+    } else {
+        $txtModels = traducirTexto('Ver Anexo Adjunto (Página 2)', $lang);
+    }
+} else {
+    $bloques_anexo = [];
+    $totalPaginas = '01';
+    $txtModels = implode(', ', $modelos_array);
+}
 
 function getBase64Img($path) {
     return file_exists($path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($path)) : '';
@@ -101,7 +123,6 @@ $dompdf = new Dompdf($options);
 $fontFamily = ($lang === 'zh') ? "'Noto Sans SC', 'SimSun', 'DejaVu Sans', sans-serif" : "'Helvetica', 'Arial', sans-serif";
 $lblScan    = ($lang === 'zh') ? '扫码验证' : (($lang === 'en') ? 'Scan to verify' : 'Escanear para verificar');
 
-// Limpieza de saltos en la dirección
 if (!empty($dirFabTrad)) {
     $dirFabTrad = str_replace(['<br>', '<br/>', '<br />'], ' ', $dirFabTrad);
 }
@@ -140,13 +161,15 @@ ob_start();
         padding-top: 170px;
         padding-left: 80px;
         padding-right: 80px;
-        page-break-after: always;
+        box-sizing: border-box;
     }
 
-    .page-2 {
-        padding-top: 155px;
+    .page-anexo {
+        page-break-before: always;
+        padding-top: 150px;
         padding-left: 80px;
         padding-right: 80px;
+        box-sizing: border-box;
     }
 
     .subtitle-type { 
@@ -208,8 +231,8 @@ ob_start();
 
     .models-box {
         width: 100%;
-        font-size: 10.5px; 
-        line-height: 1.6; 
+        font-size: 10px; 
+        line-height: 1.5; 
         color: #1e293b; 
         text-align: justify;
         word-wrap: break-word;
@@ -339,33 +362,40 @@ ob_start();
     </div>
 </div>
 
-<!-- PÁGINA 2 (ANEXO DE MODELOS) -->
-<?php if ($mostrar_anexo): ?>
-<div class="page-2">
-    <?php if ($marcoPagina2): ?>
-        <img src="<?= $marcoPagina2 ?>" class="bg-frame">
-    <?php endif; ?>
-
-    <div style="text-align: center; margin-bottom: 16px;">
-        <div style="font-size: 15px; font-weight: bold; color: #0b2c5b; text-transform: uppercase;"><?= htmlspecialchars($lblAtt, ENT_QUOTES, 'UTF-8') ?></div>
-        <div style="font-size: 12px; font-weight: bold; color: #c5a059; margin-top: 2px;">Certificate No. <?= htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?></div>
-    </div>
-
-    <div class="models-box">
-        <span class="models-title"><?= htmlspecialchars(traducirTexto('Lista de Modelos Certificados:', $lang), ENT_QUOTES, 'UTF-8') ?></span>
-        <?= htmlspecialchars($string_modelos, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-
-    <div class="footer-container">
-        <div class="page-num">
-            <?php if ($lang === 'zh'): ?>
-                <?= "{$txtPageWord} 02 {$txtOfWord} 02 页 - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
-            <?php else: ?>
-                <?= "{$txtPageWord} 02 {$txtOfWord} 02 - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
+<!-- PÁGINAS DE ANEXO -->
+<?php if (!empty($bloques_anexo)): ?>
+    <?php foreach ($bloques_anexo as $index => $bloque_modelos): ?>
+        <?php 
+            $numPaginaActualInt = 2 + $index;
+            $numPaginaActual = str_pad($numPaginaActualInt, 2, '0', STR_PAD_LEFT);
+            $string_bloque = implode(', ', $bloque_modelos);
+        ?>
+        <div class="page-anexo">
+            <?php if ($marcoPagina2): ?>
+                <img src="<?= $marcoPagina2 ?>" class="bg-frame">
             <?php endif; ?>
+
+            <div style="text-align: center; margin-bottom: 14px;">
+                <div style="font-size: 15px; font-weight: bold; color: #0b2c5b; text-transform: uppercase;"><?= htmlspecialchars($lblAtt, ENT_QUOTES, 'UTF-8') ?></div>
+                <div style="font-size: 12px; font-weight: bold; color: #c5a059; margin-top: 2px;">Certificate No. <?= htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?></div>
+            </div>
+
+            <div class="models-box">
+                <span class="models-title"><?= htmlspecialchars(traducirTexto('Lista de Modelos Certificados:', $lang), ENT_QUOTES, 'UTF-8') ?></span>
+                <?= htmlspecialchars($string_bloque, ENT_QUOTES, 'UTF-8') ?>
+            </div>
+
+            <div class="footer-container">
+                <div class="page-num">
+                    <?php if ($lang === 'zh'): ?>
+                        <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} 页 - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
+                    <?php else: ?>
+                        <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    <?php endforeach; ?>
 <?php endif; ?>
 
 </body>
