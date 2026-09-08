@@ -1,5 +1,5 @@
 <?php
-// verificar.php - Consulta de Autenticidad Pública
+// verificar.php - Consulta de Autenticidad Pública con Traducción Integral de Modelos
 require_once 'config/conexion.php';
 require_once 'config/traductor.php';
 
@@ -22,6 +22,21 @@ if ($token) {
     $mensaje_error = traducirTexto("No valid verification token was provided.", $lang);
 }
 
+// PROCESAMIENTO Y LIMPIEZA DE MODELOS
+$modelos_array = [];
+if ($certificado && !empty($certificado['modelos_adjuntos'])) {
+    $modelos_raw = array_map('trim', explode(',', $certificado['modelos_adjuntos']));
+    foreach ($modelos_raw as $mod) {
+        if (!empty($mod) && strtolower($mod) !== 'modelos' && strtolower($mod) !== 'modelo') {
+            $mod = str_replace(['<br>', '<br/>', '<br />'], '', $mod);
+            $mod = trim($mod);
+            if (!empty($mod)) {
+                $modelos_array[] = $mod;
+            }
+        }
+    }
+}
+
 // LÓGICA DE VALIDACIÓN (Vigencia + Estado Bloqueado)
 $es_valido = false;
 $es_bloqueado = false;
@@ -37,7 +52,7 @@ if ($certificado) {
     $es_valido = (!$es_bloqueado && $certificado['fecha_expiracion'] >= $fecha_actual);
 }
 
-// Etiquetas traducidas dinámicamente
+// ETIQUETAS TRADUCIDAS DINÁMICAMENTE
 $companyName = traducirTexto("Qingdao Technology Engineering Institute", $lang);
 $companySub  = traducirTexto("Official Quality Control & Certification Division", $lang);
 
@@ -48,11 +63,22 @@ $lblExpired  = traducirTexto("EXPIRED CERTIFICATE", $lang);
 $lblType     = traducirTexto("Certificate Type:", $lang);
 $lblNo       = traducirTexto("Certificate No.:", $lang);
 $lblProd     = traducirTexto("Product Line:", $lang);
+$lblModels   = traducirTexto("Model(s):", $lang);
 $lblApplicant= traducirTexto("Applicant:", $lang);
 $lblMfr      = traducirTexto("Manufacturer:", $lang);
 $lblIssue    = traducirTexto("Issue Date:", $lang);
 $lblUntil    = traducirTexto("Expiration Date:", $lang);
 $lblFooter   = traducirTexto("This electronic document has been issued and authenticated by Qingdao Technology Engineering Institute.", $lang);
+
+// TEXTO DEL CONTADOR DE MODELOS NATIVO POR IDIOMA
+$totalCount = count($modelos_array);
+if ($lang === 'zh') {
+    $lblTotalModels = "共 {$totalCount} 个注册型号";
+} elseif ($lang === 'en') {
+    $lblTotalModels = "Total: {$totalCount} models registered";
+} else {
+    $lblTotalModels = "Total: {$totalCount} modelo(s) registrado(s)";
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($lang) ?>">
@@ -67,6 +93,8 @@ $lblFooter   = traducirTexto("This electronic document has been issued and authe
         .verify-card { max-width: 620px; margin: 30px auto; border-radius: 16px; }
         .company-logo { max-height: 55px; width: auto; }
         .status-badge { font-size: 0.95rem; padding: 10px 20px; border-radius: 30px; letter-spacing: 0.5px; }
+        .models-scroll { max-height: 140px; overflow-y: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; }
+        .badge-model { background-color: #e2e8f0; color: #334155; font-family: monospace; font-size: 0.8rem; border: 1px solid #cbd5e1; }
     </style>
 </head>
 <body>
@@ -122,10 +150,10 @@ $lblFooter   = traducirTexto("This electronic document has been issued and authe
 
                 <!-- Tabla con datos del certificado -->
                 <div class="table-responsive bg-light p-3 rounded-3 border text-start">
-                    <table class="table table-borderless mb-0">
+                    <table class="table table-borderless align-middle mb-0">
                         <tr>
-                            <td class="fw-bold text-secondary" style="width: 42%;"><?= htmlspecialchars($lblType) ?></td>
-                            <td class="fw-bold text-primary"><?= htmlspecialchars(traducirTexto($certificado['tipo_certificado'], $lang)) ?></td>
+                            <td class="fw-bold text-secondary" style="width: 38%;"><?= htmlspecialchars($lblType) ?></td>
+                            <td class="fw-bold text-primary"><?= htmlspecialchars(traducirTexto($certificado['tipo_certificado'] ?? 'CERTIFICATE OF COMPLIANCE', $lang)) ?></td>
                         </tr>
                         <tr>
                             <td class="fw-bold text-secondary"><?= htmlspecialchars($lblNo) ?></td>
@@ -143,6 +171,34 @@ $lblFooter   = traducirTexto("This electronic document has been issued and authe
                             <td class="fw-bold text-secondary"><?= htmlspecialchars($lblMfr) ?></td>
                             <td><?= htmlspecialchars(traducirTexto($certificado['fabricante'], $lang)) ?></td>
                         </tr>
+
+                        <!-- FILA DE MODELOS ADJUNTOS -->
+                        <tr>
+                            <td class="fw-bold text-secondary align-top pt-2"><?= htmlspecialchars($lblModels) ?></td>
+                            <td>
+                                <?php if (!empty($modelos_array)): ?>
+                                    <?php if (count($modelos_array) <= 8): ?>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <?php foreach ($modelos_array as $mod): ?>
+                                                <span class="badge badge-model"><?= htmlspecialchars($mod) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="models-scroll">
+                                            <small class="text-muted d-block mb-1 fw-bold"><?= htmlspecialchars($lblTotalModels) ?></small>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <?php foreach ($modelos_array as $mod): ?>
+                                                    <span class="badge badge-model"><?= htmlspecialchars($mod) ?></span>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted small"><?= htmlspecialchars(traducirTexto("See Attached Annex in PDF", $lang)) ?></span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+
                         <tr>
                             <td class="fw-bold text-secondary"><?= htmlspecialchars($lblIssue) ?></td>
                             <td><?= htmlspecialchars($certificado['fecha_emision']) ?></td>
@@ -154,7 +210,7 @@ $lblFooter   = traducirTexto("This electronic document has been issued and authe
                     </table>
                 </div>
 
-                <div class="alert alert-info mt-4 mb-0 text-center" role="alert">
+                <div class="alert alert-info mt-4 mb-0 text-center border-0 shadow-sm" role="alert" style="background-color: #e0f2fe; color: #0369a1;">
                     <small><i class="bi bi-info-circle me-1"></i> <?= htmlspecialchars($lblFooter) ?></small>
                 </div>
 

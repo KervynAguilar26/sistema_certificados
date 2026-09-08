@@ -249,7 +249,7 @@ ob_start();
 
     .footer-container {
         position: absolute;
-        bottom: 105px;
+        bottom: 120px;
         left: 80px;
         right: 80px;
         height: 75px;
@@ -257,13 +257,14 @@ ob_start();
 
     .qr-box { 
         float: right;
-        width: 90px; 
-        text-align: center; 
+        width: 110px; 
+        text-align: center;
+        margin-top: -25px; 
     }
     
     .qr-img { 
-        width: 70px; 
-        height: 70px; 
+        width: 100px; 
+        height: 100px; 
         display: block;
         margin: 0 auto;
     }
