@@ -1,11 +1,14 @@
 <?php
-// generar_pdf.php - Versión con Traducción Total de Rangos y Ajuste de Hojas Limpio
+// generar_pdf.php - Declaración Explícita de Fuente TrueType para Chino Simplificado
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/conexion.php';
 require_once __DIR__ . '/config/traductor.php';
 require_once __DIR__ . '/includes/qr_generator.php';
 require_once 'includes/auth.php';
 
+// -----------------------------------------------------------------------------
+// 1. CONTROL DE ACCESO Y PARÁMETROS
+// -----------------------------------------------------------------------------
 if (!esSuperAdmin()) {
     die("Acceso denegado: No posee permisos de Administrador para realizar esta operación.");
 }
@@ -13,19 +16,61 @@ if (!esSuperAdmin()) {
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-$id   = $_GET['id']   ?? null;
-$lang = $_GET['lang'] ?? 'es';
+$id = $_GET['id'] ?? null;
+
+// Restricción exclusiva a Chino (zh) e Inglés (en)
+$requestedLang = strtolower($_GET['lang'] ?? 'zh');
+$lang = ($requestedLang === 'en') ? 'en' : 'zh';
 
 if (!$id) { die("Error: ID no especificado."); }
 
+// Obtención del registro del certificado
 $stmt = $pdo->prepare("SELECT * FROM certificados WHERE id = :id");
 $stmt->execute(['id' => $id]);
 $cert = $stmt->fetch();
 
 if (!$cert) { die("Error: Certificado no encontrado."); }
 
-// TRADUCCIÓN COMPLETA DE CAMPOS
-$tipoCertTrad   = traducirTexto($cert['tipo_certificado'] ?? 'CERTIFICATE OF COMPLIANCE', $lang);
+// -----------------------------------------------------------------------------
+// 2. DICCIONARIO Y TRADUCCIONES POR IDIOMA
+// -----------------------------------------------------------------------------
+if ($lang === 'zh') {
+    $tipoCertTrad   = '合规证书';
+    $lblMfr         = '制造商:';
+    $lblProd        = '产品:';
+    $lblBrand       = '商标:';
+    $lblModels      = '型号:';
+    $lblParams      = '测试参数:';
+    $lblTested      = '按标准测试:';
+    $lblReport      = '检测报告编号:';
+    $lblValid       = '有效性:';
+    $lblIssue       = '排放';
+    $lblUntil       = '到期日';
+    $lblAtt         = '认证型号附件';
+    $lblListModels  = '认证型号列表:';
+    $lblScan        = '扫码验证';
+    $txtPageWord    = '第';
+    $txtOfWord      = '页 共';
+} else {
+    $tipoCertTrad   = 'CERTIFICATE OF COMPLIANCE';
+    $lblMfr         = 'Manufacturer:';
+    $lblProd        = 'Product:';
+    $lblBrand       = 'Trademark:';
+    $lblModels      = 'Model(s):';
+    $lblParams      = 'Test Parameters:';
+    $lblTested      = 'Tested according to standard:';
+    $lblReport      = 'Test report No.:';
+    $lblValid       = 'Validity:';
+    $lblIssue       = 'Emission';
+    $lblUntil       = 'Expiry';
+    $lblAtt         = 'ANNEX OF CERTIFIED MODELS';
+    $lblListModels  = 'List of Certified Models:';
+    $lblScan        = 'Scan to verify';
+    $txtPageWord    = 'Page';
+    $txtOfWord      = 'of';
+}
+
+// Traducción de campos dinámicos traídos de la base de datos
 $fabricanteTrad = traducirTexto($cert['fabricante'], $lang);
 $dirFabTrad     = traducirTexto($cert['direccion_fabricante'] ?? '', $lang);
 $productoTrad   = traducirTexto($cert['producto'], $lang);
@@ -35,34 +80,9 @@ $paramTrad      = traducirTexto($cert['parametros_ensayo'] ?? '', $lang);
 $normasTrad     = traducirTexto($cert['normas_ensayo'] ?? '', $lang);
 $reporteTrad    = traducirTexto($cert['reporte_ensayo'] ?? '', $lang);
 
-// ETIQUETAS FIJAS
-$lblMfr    = traducirTexto('Fabricante:', $lang);
-$lblProd   = traducirTexto('Producto:', $lang);
-$lblBrand  = traducirTexto('Marca Comercial:', $lang);
-$lblModels = traducirTexto('Modelo(s):', $lang);
-$lblParams = traducirTexto('Parámetros de Ensayo:', $lang);
-$lblTested = traducirTexto('Probado según norma:', $lang);
-$lblReport = traducirTexto('Informe de ensayo N°:', $lang);
-$lblValid  = traducirTexto('Validez:', $lang);
-$lblIssue  = traducirTexto('Emisión', $lang);
-
-$lblUntil  = ($lang === 'en') ? 'Expiry' : (($lang === 'zh') ? '到期日' : 'Vencimiento');
-$lblAtt    = traducirTexto('ANEXO DE MODELOS CERTIFICADOS', $lang);
-$lblLegal  = traducirTexto('El producto fue probado de forma voluntaria y cumple con los requisitos esenciales de calidad y seguridad.', $lang);
-
-// PAGINACIÓN MULTILINGÜE
-if ($lang === 'en') {
-    $txtPageWord = 'Page';
-    $txtOfWord   = 'of';
-} elseif ($lang === 'zh') {
-    $txtPageWord = '第';
-    $txtOfWord   = '页 共';
-} else {
-    $txtPageWord = 'Página';
-    $txtOfWord   = 'de';
-}
-
-// PROCESAMIENTO DE MODELOS
+// -----------------------------------------------------------------------------
+// 3. PROCESAMIENTO Y DEPURACIÓN DE MODELOS
+// -----------------------------------------------------------------------------
 $modelos_raw = array_map('trim', explode(',', $cert['modelos_adjuntos']));
 $modelos_array = [];
 foreach ($modelos_raw as $mod) {
@@ -75,8 +95,8 @@ foreach ($modelos_raw as $mod) {
     }
 }
 
-// CAPACIDAD POR HOJA DE ANEXO
-$modelos_por_pagina = 270;
+// Capacidad por hoja del anexo
+$modelos_por_pagina = 180;
 $total_modelos = count($modelos_array);
 
 if ($total_modelos > 10) {
@@ -87,15 +107,13 @@ if ($total_modelos > 10) {
 
     if ($cant_paginas_anexo > 1) {
         $hastaPagina = $totalPaginasInt;
-        if ($lang === 'zh') {
-            $txtModels = "见附件(第2至{$hastaPagina}页)";
-        } elseif ($lang === 'en') {
-            $txtModels = "See Attached Annex (Pages 2 to {$hastaPagina})";
-        } else {
-            $txtModels = "Ver Anexo Adjunto (Páginas 2 a {$hastaPagina})";
-        }
+        $txtModels = ($lang === 'zh') 
+            ? "见附件(第2至{$hastaPagina}页)" 
+            : "See Attached Annex (Pages 2 to {$hastaPagina})";
     } else {
-        $txtModels = traducirTexto('Ver Anexo Adjunto (Página 2)', $lang);
+        $txtModels = ($lang === 'zh') 
+            ? '见附件(第2页)' 
+            : 'See Attached Annex (Page 2)';
     }
 } else {
     $bloques_anexo = [];
@@ -103,6 +121,7 @@ if ($total_modelos > 10) {
     $txtModels = implode(', ', $modelos_array);
 }
 
+// Helper para convertir imágenes en código Base64 embebido
 function getBase64Img($path) {
     return file_exists($path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($path)) : '';
 }
@@ -111,17 +130,17 @@ $marcoPagina1 = getBase64Img(__DIR__ . '/assets/img/marco_dorado.png');
 $marcoPagina2 = getBase64Img(__DIR__ . '/assets/img/marco_dorado 2.png');
 $qrBase64     = getBase64Img(obtenerRutaQR($cert['token_verificacion']));
 
+// -----------------------------------------------------------------------------
+// 4. CONFIGURACIÓN DE DOMPDF Y FUENTES
+// -----------------------------------------------------------------------------
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('isHtml5ParserEnabled', true);
-$options->set('isFontSubsettingEnabled', true);
-$options->set('defaultFont', 'sans-serif');
+$options->set('isFontSubsettingEnabled', true); // <--- OBLIGATORIO PARA FUENTES CJK EN DOMPDF[cite: 11]
+$options->set('defaultFont', 'wqy-zenhei');
 $options->set('chroot', __DIR__);
 
 $dompdf = new Dompdf($options);
-
-$fontFamily = ($lang === 'zh') ? "'wqy-zenhei', sans-serif" : "'Helvetica', 'Arial', sans-serif";
-$lblScan    = ($lang === 'zh') ? '扫码验证' : (($lang === 'en') ? 'Scan to verify' : 'Escanear para verificar');
 
 if (!empty($dirFabTrad)) {
     $dirFabTrad = str_replace(['<br>', '<br/>', '<br />'], ' ', $dirFabTrad);
@@ -134,6 +153,19 @@ ob_start();
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
+    /* REGISTRO Y ASIGNACIÓN DIRECTA DE FUENTE SEGURO EN CSS */
+    @font-face {
+        font-family: 'wqy-zenhei';
+        font-style: normal;
+        font-weight: normal;
+        src: local('wqy-zenhei'), local('WenQuanYi Zen Hei');
+    }
+
+    * {
+        font-family: 'wqy-zenhei', sans-serif !important; /* <--- FORZAR FUENTE EN TODOS LOS ELEMENTOS DEL DOM */
+    }
+
+    /* Configuración Global de la Hoja A4 */
     @page { 
         margin: 0px; 
         size: A4 portrait;
@@ -142,12 +174,12 @@ ob_start();
     body { 
         margin: 0px; 
         padding: 0px; 
-        font-family: <?= $fontFamily ?>; 
-        color: #0b2c5b; 
-        font-size: 11px;
-        line-height: 1.35;
+        color: #212121; 
+        font-size: 14px; 
+        line-height: 1.45;
     }
 
+    /* Imagen de Marco Dorado de Fondo */
     .bg-frame { 
         position: fixed; 
         top: 0px; 
@@ -157,39 +189,45 @@ ob_start();
         z-index: -1000; 
     }
 
+    /* Contenedor de la Primera Página */
     .page-1 {
-        padding-top: 170px;
-        padding-left: 80px;
-        padding-right: 80px;
+        padding-top: 150px;
+        padding-left: 70px;
+        padding-right: 70px;
         box-sizing: border-box;
     }
 
+    /* Contenedor del Anexo (Página 2) */
     .page-anexo {
         page-break-before: always;
-        padding-top: 150px;
-        padding-left: 80px;
-        padding-right: 80px;
+        padding-top: 130px;
+        padding-left: 70px;
+        padding-right: 70px;
         box-sizing: border-box;
     }
 
-    .subtitle-type { 
-        font-size: 19px; 
+    /* TÍTULO PRINCIPAL UNIFICADO */
+    .subtitle-type, .title-anexo { 
+        font-size: 32px; 
         font-weight: bold; 
-        color: #c5a059; 
+        color: #212121; 
         text-align: center; 
-        margin-bottom: 4px; 
+        margin-bottom: 2px; 
         text-transform: uppercase; 
-        line-height: 1.25;
+        line-height: 1.15;
+        letter-spacing: 0.5px;
     }
     
+    /* Número de Certificado */
     .cert-no { 
-        font-size: 13.5px; 
+        font-size: 18px; 
         font-weight: bold; 
-        color: #0b2c5b; 
+        color: #212121; 
         text-align: center; 
-        margin-bottom: 14px; 
+        margin-bottom: 18px; 
     }
 
+    /* Tabla Principal de Datos */
     .data-table { 
         width: 100%; 
         border-collapse: collapse; 
@@ -197,10 +235,11 @@ ob_start();
     }
     
     .data-table td { 
-        padding: 3.5px 0; 
-        font-size: 11px; 
+        padding: 5px 0; 
+        font-size: 14px; 
+        color: #212121;
         vertical-align: top; 
-        line-height: 1.35; 
+        line-height: 1.45; 
         word-wrap: break-word;
         overflow-wrap: break-word;
         text-align: left;
@@ -208,71 +247,71 @@ ob_start();
     
     .lbl { 
         font-weight: bold; 
-        color: #0b2c5b; 
-        width: 32%; 
+        color: #212121; 
+        width: 34%; 
         padding-right: 8px;
     }
 
     .dir-address {
-        color: #475569;
-        font-size: 9.5px;
-        line-height: 1.25;
+        color: #212121;
+        font-size: 13px;
+        line-height: 1.35;
         display: block;
-        margin-top: 2px;
+        margin-top: 3px;
     }
 
-    .legal-text {
-        font-size: 8.5px;
-        color: #475569;
-        text-align: justify;
-        margin-top: 12px;
-        line-height: 1.3;
-    }
-
+    /* Estilos de la Lista de Modelos del Anexo (Página 2) */
     .models-box {
         width: 100%;
-        font-size: 10px; 
-        line-height: 1.5; 
-        color: #1e293b; 
+        font-size: 14px; 
+        line-height: 1.6; 
+        color: #212121; 
         text-align: justify;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
 
     .models-title {
-        font-size: 11px;
+        font-size: 16px; 
         font-weight: bold;
-        color: #0b2c5b;
+        color: #212121;
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 10px;
     }
 
+    /* Pie de página contenedor */
     .footer-container {
         position: absolute;
-        bottom: 120px;
-        left: 80px;
-        right: 80px;
-        height: 75px;
+        bottom: 80px; 
+        left: 70px;
+        right: 70px;
+        height: 85px;
     }
 
+    /* Posicionamiento del QR */
     .qr-box { 
-        float: right;
-        width: 110px; 
+        position: absolute;
+        right: 0px;
+        bottom: -15px; 
+        width: 115px; 
         text-align: center;
-        margin-top: -25px; 
     }
     
     .qr-img { 
-        width: 100px; 
-        height: 100px; 
+        width: 105px; 
+        height: 105px; 
         display: block;
         margin: 0 auto;
     }
 
-    .page-num { 
-        float: left;
-        margin-top: 45px;
-        font-size: 8.5px; 
+    /* PAGINACIÓN ROJA COLOCADA EN EL BORDE MÁS BAJO DE LA HOJA */
+    .page-num-bottom { 
+        position: absolute;
+        bottom: 35px; 
+        left: 0px;
+        right: 0px; 
+        text-align: center; 
+        font-size: 11.5px; 
         color: #ec0a0a; 
         font-weight: bold;
     }
@@ -280,7 +319,9 @@ ob_start();
 </head>
 <body>
 
-<!-- PÁGINA 1 -->
+<!-- ======================================================================= -->
+<!-- PÁGINA 1: CERTIFICADO PRINCIPAL                                         -->
+<!-- ======================================================================= -->
 <div class="page-1">
     <?php if ($marcoPagina1): ?>
         <img src="<?= $marcoPagina1 ?>" class="bg-frame">
@@ -334,36 +375,35 @@ ob_start();
 
         <?php if (!empty($descProdTrad)): ?>
         <tr>
-            <td colspan="2" style="font-size: 9.5px; color: #334155; padding-top: 6px; line-height: 1.3;">
+            <td colspan="2" style="font-size: 14px; color: #212121; padding-top: 10px; line-height: 1.4;">
                 <?= nl2br(htmlspecialchars($descProdTrad, ENT_QUOTES, 'UTF-8')) ?>
             </td>
         </tr>
         <?php endif; ?>
     </table>
 
-    <div class="legal-text">
-        <?= htmlspecialchars($lblLegal, ENT_QUOTES, 'UTF-8') ?>
-    </div>
-
     <div class="footer-container">
-        <div class="page-num">
-            <?php if ($lang === 'zh'): ?>
-                <?= "{$txtPageWord} 01 {$txtOfWord} {$totalPaginas} 页" ?>
-            <?php else: ?>
-                <?= "{$txtPageWord} 01 {$txtOfWord} {$totalPaginas}" ?>
-            <?php endif; ?>
-        </div>
-
         <div class="qr-box">
             <?php if (!empty($qrBase64)): ?>
                 <img src="<?= $qrBase64 ?>" class="qr-img"><br>
             <?php endif; ?>
-            <span style="font-size: 6.5px; color: #64748b; font-weight: bold;"><?= htmlspecialchars($lblScan, ENT_QUOTES, 'UTF-8') ?></span>
+            <span style="font-size: 8px; color: #212121; font-weight: bold;"><?= htmlspecialchars($lblScan, ENT_QUOTES, 'UTF-8') ?></span>
         </div>
+    </div>
+
+    <!-- Paginación Roja Centrada en el Borde Inferior de la Hoja -->
+    <div class="page-num-bottom">
+        <?php if ($lang === 'zh'): ?>
+            <?= "{$txtPageWord} 01 {$txtOfWord} {$totalPaginas} 页" ?>
+        <?php else: ?>
+            <?= "{$txtPageWord} 01 {$txtOfWord} {$totalPaginas}" ?>
+        <?php endif; ?>
     </div>
 </div>
 
-<!-- PÁGINAS DE ANEXO -->
+<!-- ======================================================================= -->
+<!-- PÁGINA 2+: ANEXO DE MODELOS CERTIFICADOS                                -->
+<!-- ======================================================================= -->
 <?php if (!empty($bloques_anexo)): ?>
     <?php foreach ($bloques_anexo as $index => $bloque_modelos): ?>
         <?php 
@@ -376,24 +416,25 @@ ob_start();
                 <img src="<?= $marcoPagina2 ?>" class="bg-frame">
             <?php endif; ?>
 
-            <div style="text-align: center; margin-bottom: 14px;">
-                <div style="font-size: 15px; font-weight: bold; color: #0b2c5b; text-transform: uppercase;"><?= htmlspecialchars($lblAtt, ENT_QUOTES, 'UTF-8') ?></div>
-                <div style="font-size: 12px; font-weight: bold; color: #c5a059; margin-top: 2px;">Certificate No. <?= htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?></div>
+            <!-- Encabezado del Anexo -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="title-anexo"><?= htmlspecialchars($lblAtt, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="cert-no" style="margin-top: 4px;">Certificate No. <?= htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?></div>
             </div>
 
+            <!-- Caja de Modelos -->
             <div class="models-box">
-                <span class="models-title"><?= htmlspecialchars(traducirTexto('Lista de Modelos Certificados:', $lang), ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="models-title"><?= htmlspecialchars($lblListModels, ENT_QUOTES, 'UTF-8') ?></span>
                 <?= htmlspecialchars($string_bloque, ENT_QUOTES, 'UTF-8') ?>
             </div>
 
-            <div class="footer-container">
-                <div class="page-num">
-                    <?php if ($lang === 'zh'): ?>
-                        <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} 页 - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
-                    <?php else: ?>
-                        <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
-                    <?php endif; ?>
-                </div>
+            <!-- Paginación Roja Centrada en Borde Inferior para Anexos -->
+            <div class="page-num-bottom">
+                <?php if ($lang === 'zh'): ?>
+                    <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} 页 - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
+                <?php else: ?>
+                    <?= "{$txtPageWord} {$numPaginaActual} {$txtOfWord} {$totalPaginas} - S-" . htmlspecialchars($cert['codigo_certificado'], ENT_QUOTES, 'UTF-8') ?>
+                <?php endif; ?>
             </div>
         </div>
     <?php endforeach; ?>
