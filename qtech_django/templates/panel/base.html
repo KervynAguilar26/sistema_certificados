@@ -1,0 +1,147 @@
+{% load static %}<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ t.panel_dashboard }}{% endblock %} · {{ t.panel_brand_name }}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'img/favicon.png' %}{% endif %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/panel.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="panel-body">
+<div class="panel-shell">
+  <aside class="panel-sidebar" id="panelSidebar">
+    <a class="panel-brand" href="{% url 'panel:dashboard' %}">
+      <span class="panel-brand-mark" aria-hidden="true">Q</span>
+      <span class="panel-brand-copy">
+        <strong>{{ t.panel_brand_name }}</strong>
+        <small>{{ t.panel_brand_sub }}</small>
+      </span>
+    </a>
+
+    <nav class="panel-nav" aria-label="{{ t.panel_management }}">
+      <p class="panel-nav-label">{{ t.panel_management }}</p>
+      <a class="panel-nav-link{% if nav == 'dashboard' %} is-active{% endif %}" href="{% url 'panel:dashboard' %}">
+        <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_dashboard }}
+      </a>
+      <a class="panel-nav-link{% if nav == 'certificates' %} is-active{% endif %}" href="{% url 'panel:certificate_list' %}">
+        <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_certificates }}
+      </a>
+      <a class="panel-nav-link{% if nav == 'activity' %} is-active{% endif %}" href="{% url 'panel:activity' %}">
+        <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_activity }}
+      </a>
+      {% if request.user.is_superadmin %}
+        <p class="panel-nav-label">{{ t.panel_administration }}</p>
+        <a class="panel-nav-link{% if nav == 'users' %} is-active{% endif %}" href="{% url 'panel:user_list' %}">
+          <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_users }}
+        </a>
+      {% endif %}
+      <p class="panel-nav-label">{{ t.panel_system }}</p>
+      <a class="panel-nav-link" href="{% url 'core:home' %}" target="_blank" rel="noopener noreferrer">
+        <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_public_site }} <span class="panel-external" aria-hidden="true">↗</span>
+      </a>
+      <a class="panel-nav-link" href="{% url 'admin:index' %}">
+        <span class="panel-nav-dot" aria-hidden="true"></span>{{ t.panel_advanced }}
+      </a>
+    </nav>
+
+    <div class="panel-sidebar-footer">
+      <p>{{ t.panel_private_note }}</p>
+    </div>
+  </aside>
+
+  <div class="panel-main">
+    <header class="panel-topbar">
+      <button class="panel-toggle" type="button" data-panel-toggle aria-controls="panelSidebar" aria-expanded="false" aria-label="{{ t.menu }}">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="panel-topbar-title">
+        {% block page_title %}{{ t.panel_dashboard }}{% endblock %}
+      </div>
+      <div class="panel-topbar-actions">
+        <div class="panel-lang" role="group" aria-label="{{ t.language }}">
+          <a href="{% url 'set_language' %}?lang=en&next={{ request.get_full_path|urlencode }}" class="{% if current_language == 'en' %}is-active{% endif %}">EN</a>
+          <a href="{% url 'set_language' %}?lang=zh-hans&next={{ request.get_full_path|urlencode }}" class="{% if current_language == 'zh-hans' %}is-active{% endif %}">中文</a>
+        </div>
+        <div class="dropdown">
+          <button class="panel-user" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="panel-user-avatar" aria-hidden="true">{{ request.user.full_name|default:request.user.email|first|upper }}</span>
+            <span class="panel-user-copy">
+              <strong>{{ request.user.full_name|default:request.user.email }}</strong>
+              <small>{{ request.user.role_label }}</small>
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end panel-dropdown">
+            <li class="dropdown-header">{{ request.user.email }}</li>
+            {% if request.user.is_superadmin %}
+              <li><a class="dropdown-item" href="{% url 'panel:user_password' request.user.pk %}">{{ t.panel_change_password }}</a></li>
+              <li><a class="dropdown-item" href="{% url 'panel:user_list' %}">{{ t.panel_users }}</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'panel:logout' %}">
+                {% csrf_token %}
+                <button class="dropdown-item text-danger" type="submit">{{ t.panel_logout }}</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    {% if messages %}
+      <div class="panel-messages" role="status" aria-live="polite">
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'debug' %}secondary{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ t.close }}"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <main class="panel-content" id="panel-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="panel-footer">
+      <span>© {{ current_year }} {{ site.site_name }}</span>
+      <span>{{ t.panel_footer_note }}</span>
+    </footer>
+  </div>
+</div>
+<div class="panel-backdrop" data-panel-backdrop hidden></div>
+
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script>
+  (function () {
+    var sidebar = document.getElementById("panelSidebar");
+    var backdrop = document.querySelector("[data-panel-backdrop]");
+    var toggle = document.querySelector("[data-panel-toggle]");
+
+    function setOpen(open) {
+      if (!sidebar) return;
+      sidebar.classList.toggle("is-open", open);
+      if (backdrop) backdrop.hidden = !open;
+      if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      document.body.classList.toggle("panel-no-scroll", open);
+    }
+
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        setOpen(!sidebar.classList.contains("is-open"));
+      });
+    }
+    if (backdrop) {
+      backdrop.addEventListener("click", function () { setOpen(false); });
+    }
+    document.querySelectorAll(".panel-nav-link").forEach(function (link) {
+      link.addEventListener("click", function () { setOpen(false); });
+    });
+  })();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

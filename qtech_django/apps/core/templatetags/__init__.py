@@ -1,0 +1,1 @@
+"""Templatetags de QTech."""

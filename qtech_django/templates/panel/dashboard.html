@@ -1,0 +1,143 @@
+{% extends "panel/base.html" %}
+{% load static %}
+
+{% block title %}{{ t.panel_dashboard }}{% endblock %}
+{% block page_title %}{{ t.panel_dashboard }}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_secure_area }}</p>
+    <h1>{{ t.panel_welcome }}, {{ request.user.get_short_name }}</h1>
+    <p class="panel-subtitle">{{ t.panel_dashboard_subtitle }}</p>
+  </div>
+  <div class="panel-head-actions">
+    <a class="btn btn-primary" href="{% url 'panel:certificate_create' %}">+ {{ t.panel_new_certificate }}</a>
+    <a class="btn btn-outline-secondary" href="{% url 'core:home' %}" target="_blank" rel="noopener noreferrer">{{ t.panel_public_site }} ↗</a>
+  </div>
+</div>
+
+<section class="panel-stats" aria-label="{{ t.panel_dashboard }}">
+  <a class="panel-stat is-green" href="{% url 'panel:certificate_list' %}">
+    <span class="panel-stat-label">{{ t.panel_total_certificates }}</span>
+    <span class="panel-stat-value">{{ stats.total }}</span>
+    <span class="panel-stat-note">{{ t.panel_view_all }}</span>
+  </a>
+  <a class="panel-stat is-green" href="{% url 'panel:certificate_list' %}?status=valid">
+    <span class="panel-stat-label">{{ t.status_valid }}</span>
+    <span class="panel-stat-value">{{ stats.valid }}</span>
+    <span class="panel-stat-note">{{ t.panel_valid_note }}</span>
+  </a>
+  <a class="panel-stat is-amber" href="{% url 'panel:certificate_list' %}?status=expired">
+    <span class="panel-stat-label">{{ t.status_expired }}</span>
+    <span class="panel-stat-value">{{ stats.expired }}</span>
+    <span class="panel-stat-note">{{ t.panel_expired_note }}</span>
+  </a>
+  <a class="panel-stat is-red" href="{% url 'panel:certificate_list' %}?status=blocked">
+    <span class="panel-stat-label">{{ t.status_blocked }}</span>
+    <span class="panel-stat-value">{{ stats.blocked }}</span>
+    <span class="panel-stat-note">{{ t.panel_blocked_note }}</span>
+  </a>
+  <div class="panel-stat is-gold">
+    <span class="panel-stat-label">{{ t.panel_expiring_soon }}</span>
+    <span class="panel-stat-value">{{ stats.expiring }}</span>
+    <span class="panel-stat-note">{{ t.panel_expiring_note }}</span>
+  </div>
+  <div class="panel-stat is-gold">
+    <span class="panel-stat-label">{{ t.panel_validations_7d }}</span>
+    <span class="panel-stat-value">{{ stats.validations }}</span>
+    <span class="panel-stat-note">{{ t.panel_validations_note }}</span>
+  </div>
+</section>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <section class="panel-card h-100">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_recent_certificates }}</h2>
+        <a href="{% url 'panel:certificate_list' %}">{{ t.panel_view_all }}</a>
+      </div>
+      {% if recent_certificates %}
+        <div class="table-responsive">
+          <table class="table panel-table align-middle">
+            <thead>
+              <tr>
+                <th>{{ t.panel_code }}</th>
+                <th>{{ t.panel_applicant }}</th>
+                <th>{{ t.panel_product }}</th>
+                <th>{{ t.panel_expiry }}</th>
+                <th>{{ t.panel_status }}</th>
+                <th class="text-end">{{ t.panel_actions }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for certificate in recent_certificates %}
+                <tr>
+                  <td><a class="panel-code" href="{% url 'panel:certificate_detail' certificate.pk %}">{{ certificate.code }}</a></td>
+                  <td>{{ certificate.applicant }}</td>
+                  <td>{{ certificate.product }}</td>
+                  <td class="panel-muted">{{ certificate.expiry_date|date:"Y-m-d" }}</td>
+                  <td>
+                    <span class="panel-badge is-{{ certificate.computed_status }}">{{ certificate.status_label }}</span>
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:certificate_detail' certificate.pk %}">{{ t.panel_view }}</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="panel-empty">
+          <strong>{{ t.panel_no_certificates }}</strong>
+          <p class="mb-3">{{ t.panel_no_certificates_text }}</p>
+          <a class="btn btn-primary" href="{% url 'panel:certificate_create' %}">+ {{ t.panel_new_certificate }}</a>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-xl-4">
+    <section class="panel-card mb-4">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_quick_actions }}</h2>
+      </div>
+      <div class="panel-card-body d-grid gap-2">
+        <a class="btn btn-primary" href="{% url 'panel:certificate_create' %}">+ {{ t.panel_new_certificate }}</a>
+        {% if request.user.is_superadmin %}
+          <a class="btn btn-outline-secondary" href="{% url 'panel:user_create' %}">+ {{ t.panel_new_user }}</a>
+          <a class="btn btn-outline-secondary" href="{% url 'panel:user_list' %}">{{ t.panel_manage_users }}</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'admin:certificates_certificatetemplate_changelist' %}">{{ t.panel_manage_templates }}</a>
+        <a class="btn btn-outline-secondary" href="{% url 'admin:certificates_certificatetype_changelist' %}">{{ t.panel_manage_types }}</a>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_recent_activity }}</h2>
+        <a href="{% url 'panel:activity' %}">{{ t.panel_view_all }}</a>
+      </div>
+      <div class="panel-card-body">
+        {% if recent_events %}
+          <ul class="panel-timeline">
+            {% for event in recent_events %}
+              <li>
+                <div class="panel-event-title">{{ event.display_label }}</div>
+                <div class="panel-event-meta">
+                  <a href="{% url 'panel:certificate_detail' event.certificate.pk %}">{{ event.certificate.code }}</a>
+                  · {{ event.created_at|date:"Y-m-d H:i" }}
+                  {% if event.user %}· {{ event.user.get_short_name }}{% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="panel-muted mb-0">{{ t.panel_no_activity }}</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

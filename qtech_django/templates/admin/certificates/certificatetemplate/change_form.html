@@ -1,0 +1,24 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  {% if change and original %}
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificatetemplate_preview' original.pk 'en' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_en }}</a>
+    </li>
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificatetemplate_preview' original.pk 'zh-hans' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_zh }}</a>
+    </li>
+  {% endif %}
+{% endblock %}
+
+{% block after_field_sets %}
+  {{ block.super }}
+  <section class="qtech-help-panel">
+    <h2>{{ qtech_t.admin_template_security }}</h2>
+    <p>{{ qtech_t.admin_template_forbidden }}</p>
+    <p>{{ qtech_t.admin_template_placeholders_help }}</p>
+    <p class="qtech-muted">{{ qtech_t.admin_template_max_size }}</p>
+  </section>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ meta_title|default:site.site_name }}{% endblock %}
+
+{% block content %}
+<section class="hero" id="inicio">
+  {% if hero_slides %}
+    <div class="hero-slider" data-hero-slider>
+      {% for slide in hero_slides %}
+        <article class="hero-slide{% if forloop.first %} is-active{% endif %}" data-hero-slide>
+          {% if slide.image %}<img class="hero-image" src="{{ slide.image.url }}" alt="{{ slide.alt_text|default:slide.title }}">{% endif %}
+          <div class="hero-overlay"></div>
+          <div class="container hero-content">
+            <p class="hero-kicker">{{ site.site_name }}</p>
+            <h1>{{ slide.title }}</h1>
+            {% if slide.subtitle %}<p class="hero-subtitle">{{ slide.subtitle }}</p>{% endif %}
+            {% if slide.cta_label and slide.cta_url %}
+              <a class="btn btn-primary btn-lg" href="{{ slide.cta_url }}">{{ slide.cta_label }}</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+      {% if hero_slides|length > 1 %}
+        <button class="hero-arrow hero-prev" type="button" data-hero-prev aria-label="{{ t.hero_previous }}">&#8249;</button>
+        <button class="hero-arrow hero-next" type="button" data-hero-next aria-label="{{ t.hero_next }}">&#8250;</button>
+        <div class="hero-dots" data-hero-dots>
+          {% for slide in hero_slides %}
+            <button type="button" class="hero-dot{% if forloop.first %} is-active{% endif %}" data-hero-dot="{{ forloop.counter0 }}" aria-label="{{ t.hero_slide }} {{ forloop.counter }}"></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="hero-fallback">
+      <div class="container hero-content">
+        <p class="hero-kicker">{{ site.site_name }}</p>
+        <h1>{{ site.hero_default_title|default:t.hero_default_title }}</h1>
+        <p class="hero-subtitle">{{ site.hero_default_subtitle|default:t.hero_default_subtitle }}</p>
+        <a class="btn btn-primary btn-lg" href="#servicios">{{ t.hero_cta }}</a>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<section class="section about-section" id="nosotros">
+  <div class="container split">
+    <div class="split-copy">
+      <p class="eyebrow">{{ t.about_kicker }}</p>
+      <h2>{{ t.about_title }}</h2>
+      <div class="prose">{{ site.about_text|linebreaks }}</div>
+      <div class="badge-card">
+        <span class="badge-icon" aria-hidden="true">&#10003;</span>
+        <div>
+          <strong>{{ site.about_badge_title|default:t.about_badge_title }}</strong>
+          <p>{{ site.about_badge_text|default:t.about_badge_text }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="split-media">
+      {% if gallery_images %}
+        <img src="{{ gallery_images.0.image.url }}" alt="{{ gallery_images.0.alt_text|default:gallery_images.0.title }}">
+      {% else %}
+        <img src="{% static 'img/slide2.jpg' %}" alt="{{ site.site_name }}">
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section services-section" id="servicios">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">{{ t.services_kicker }}</p>
+      <h2>{{ t.services_title }}</h2>
+      <p>{{ t.services_subtitle }}</p>
+    </div>
+    {% if services %}
+      <div class="card-grid">
+        {% for service in services %}
+          <article class="service-card">
+            <span class="service-icon" aria-hidden="true">
+              {% if 'speedometer' in service.icon %}
+                <svg viewBox="0 0 24 24"><path d="M12 4a9 9 0 0 0-9 9c0 2.2.8 4.2 2.1 5.8l1.5-1.5A7 7 0 0 1 5 13a7 7 0 1 1 14 0c0 1.6-.5 3.1-1.5 4.3l1.5 1.5A9 9 0 0 0 12 4Zm0 3a6 6 0 0 0-6 6c0 1.2.4 2.4 1 3.3l1.7-1.7A3.9 3.9 0 0 1 8 13a4 4 0 0 1 8 0c0 .6-.1 1.1-.4 1.6l1.7 1.7c.6-.9 1-2.1 1-3.3a6 6 0 0 0-6-6Zm0 4a2 2 0 0 0-2 2c0 .4.1.8.3 1.1l3.6-3.6c-.3-.3-.7-.5-1.1-.5Z"/></svg>
+              {% elif 'cpu' in service.icon %}
+                <svg viewBox="0 0 24 24"><path d="M9 2v2H7a3 3 0 0 0-3 3v2H2v2h2v2H2v2h2v2a3 3 0 0 0 3 3h2v2h2v-2h2v2h2v-2h2a3 3 0 0 0 3-3v-2h2v-2h-2v-2h2V9h-2V7a3 3 0 0 0-3-3h-2V2h-2v2h-2V2H9Zm-2 6h10v8H7V8Zm2 2v4h6v-4H9Z"/></svg>
+              {% elif 'file' in service.icon %}
+                <svg viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6Zm7 1.5L18.5 9H13V3.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>
+              {% else %}
+                <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm9.4 5.4-2.1.4a7.5 7.5 0 0 1-.6 1.5l1.2 1.8-1.9 1.9-1.8-1.2c-.5.3-1 .5-1.5.6l-.4 2.1h-2.7l-.4-2.1a7.5 7.5 0 0 1-1.5-.6l-1.8 1.2-1.9-1.9 1.2-1.8a7.5 7.5 0 0 1-.6-1.5l-2.1-.4v-2.7l2.1-.4c.1-.5.3-1 .6-1.5L4.9 8.1l1.9-1.9 1.8 1.2c.5-.3 1-.5 1.5-.6l.4-2.1h2.7l.4 2.1c.5.1 1 .3 1.5.6l1.8-1.2 1.9 1.9-1.2 1.8c.3.5.5 1 .6 1.5l2.1.4v2.7Z"/></svg>
+              {% endif %}
+            </span>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.description }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty-note">{{ t.services_empty }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section team-section" id="equipo">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">{{ t.team_kicker }}</p>
+      <h2>{{ t.team_title }}</h2>
+      <p>{{ t.team_subtitle }}</p>
+    </div>
+    {% if team_members %}
+      <div class="team-grid">
+        {% for member in team_members %}
+          <article class="team-card">
+            {% if member.photo %}
+              <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="team-photo">
+            {% else %}
+              <span class="team-initial" aria-hidden="true">{{ member.name|first }}</span>
+            {% endif %}
+            <h3>{{ member.name }}</h3>
+            {% if member.role %}<p class="team-role">{{ member.role }}</p>{% endif %}
+            {% if member.bio %}<p class="team-bio">{{ member.bio }}</p>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty-note">{{ t.team_empty }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section gallery-section" id="galeria">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">{{ t.gallery_kicker }}</p>
+      <h2>{{ t.gallery_title }}</h2>
+      <p>{{ t.gallery_subtitle }}</p>
+    </div>
+    {% if gallery_images %}
+      <div class="gallery-grid">
+        {% for image in gallery_images %}
+          <button class="gallery-item" type="button" data-lightbox="{{ image.image.url }}" data-lightbox-alt="{{ image.alt_text|default:image.title }}" aria-label="{{ t.gallery_view }}: {{ image.title|default:site.site_name }}">
+            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:image.title }}" loading="lazy">
+            {% if image.title %}<span>{{ image.title }}</span>{% endif %}
+          </button>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty-note">{{ t.gallery_empty }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="verify-band" id="verificar">
+  <div class="container verify-band-inner">
+    <div>
+      <p class="eyebrow eyebrow-light">{{ t.nav_verify }}</p>
+      <h2>{{ t.verify_cta_title }}</h2>
+      <p>{{ t.verify_cta_text }}</p>
+    </div>
+    <a class="btn btn-light btn-lg" href="{% url 'certificates:verify' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1.2 14.6-3.6-3.6 1.4-1.4 2.2 2.2 5-5 1.4 1.4-6.4 6.4Z"/></svg>
+      {{ t.verify_cta_button }}
+    </a>
+  </div>
+</section>
+
+<section class="section contact-section" id="contacto">
+  <div class="container contact-grid">
+    <div class="contact-copy">
+      <p class="eyebrow">{{ t.contact_kicker }}</p>
+      <h2>{{ t.contact_title }}</h2>
+      <p>{{ t.contact_subtitle }}</p>
+      <ul class="contact-list">
+        {% if site.address %}<li><strong>{{ t.footer_address }}</strong><span>{{ site.address }}</span></li>{% endif %}
+        {% if site.email %}<li><strong>{{ t.footer_email }}</strong><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>{% endif %}
+        {% if site.phone %}<li><strong>{{ t.footer_phone }}</strong><a href="tel:{{ site.phone }}">{{ site.phone }}</a></li>{% endif %}
+        {% if site.website %}<li><strong>{{ t.footer_website }}</strong><a href="https://{{ site.website }}" target="_blank" rel="noopener noreferrer">{{ site.website }}</a></li>{% endif %}
+      </ul>
+      <p class="hours">{{ t.contact_hours }}</p>
+    </div>
+
+    <form class="contact-form" method="post" action="{% url 'core:home' %}#contacto" novalidate>
+      {% csrf_token %}
+      {{ contact_form.website }}
+      {% if contact_form.non_field_errors %}
+        <div class="alert alert-error">{{ contact_form.non_field_errors }}</div>
+      {% endif %}
+      <div class="field-row">
+        <div class="field">
+          <label for="{{ contact_form.name.id_for_label }}">{{ t.form_name }} <span aria-hidden="true">*</span></label>
+          {{ contact_form.name }}
+          {% if contact_form.name.errors %}<p class="field-error">{{ contact_form.name.errors|striptags }}</p>{% endif %}
+        </div>
+        <div class="field">
+          <label for="{{ contact_form.email.id_for_label }}">{{ t.form_email }} <span aria-hidden="true">*</span></label>
+          {{ contact_form.email }}
+          {% if contact_form.email.errors %}<p class="field-error">{{ contact_form.email.errors|striptags }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="{{ contact_form.phone.id_for_label }}">{{ t.form_phone }} <small>({{ t.form_optional }})</small></label>
+          {{ contact_form.phone }}
+          {% if contact_form.phone.errors %}<p class="field-error">{{ contact_form.phone.errors|striptags }}</p>{% endif %}
+        </div>
+        <div class="field">
+          <label for="{{ contact_form.company.id_for_label }}">{{ t.form_company }} <small>({{ t.form_optional }})</small></label>
+          {{ contact_form.company }}
+          {% if contact_form.company.errors %}<p class="field-error">{{ contact_form.company.errors|striptags }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="field">
+        <label for="{{ contact_form.message.id_for_label }}">{{ t.form_message }} <span aria-hidden="true">*</span></label>
+        {{ contact_form.message }}
+        {% if contact_form.message.errors %}<p class="field-error">{{ contact_form.message.errors|striptags }}</p>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">{{ t.form_send }}</button>
+        <small>{{ t.contact_privacy_note }}</small>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div class="lightbox" data-lightbox-modal hidden>
+  <button type="button" class="lightbox-close" data-lightbox-close aria-label="{{ t.close }}">&times;</button>
+  <img src="" alt="" data-lightbox-image>
+</div>
+{% endblock %}

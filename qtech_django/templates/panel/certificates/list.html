@@ -1,0 +1,124 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{{ t.panel_certificates }}{% endblock %}
+{% block page_title %}{{ t.panel_certificates }}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_management }}</p>
+    <h1>{{ t.panel_certificates }}</h1>
+    <p class="panel-subtitle">{{ t.panel_certificates_subtitle }}</p>
+  </div>
+  <div class="panel-head-actions">
+    <a class="btn btn-primary" href="{% url 'panel:certificate_create' %}">+ {{ t.panel_new_certificate }}</a>
+  </div>
+</div>
+
+<section class="panel-card mb-4">
+  <div class="panel-card-body">
+    <form class="row g-2 align-items-end" method="get" action="{% url 'panel:certificate_list' %}">
+      <div class="col-lg-6">
+        <label class="form-label" for="panel-search">{{ t.panel_search }}</label>
+        <input id="panel-search" class="form-control" type="search" name="q" value="{{ query }}" placeholder="{{ t.panel_search_placeholder }}" autocomplete="off">
+      </div>
+      <div class="col-lg-3">
+        <label class="form-label" for="panel-status">{{ t.panel_status }}</label>
+        <select id="panel-status" class="form-select" name="status">
+          {% for choice in status_choices %}
+            <option value="{{ choice.value }}"{% if status_filter == choice.value %} selected{% endif %}>{{ choice.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-3 d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1" type="submit">{{ t.panel_filter }}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_list' %}">{{ t.panel_clear }}</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel-card">
+  <div class="panel-card-head">
+    <h2>{{ total_results }} {{ t.panel_results }}</h2>
+  </div>
+
+  {% if page.object_list %}
+    <div class="table-responsive">
+      <table class="table panel-table align-middle">
+        <thead>
+          <tr>
+            <th>{{ t.panel_code }}</th>
+            <th>{{ t.panel_applicant }}</th>
+            <th>{{ t.panel_product }}</th>
+            <th>{{ t.panel_type }}</th>
+            <th>{{ t.panel_expiry }}</th>
+            <th>{{ t.panel_status }}</th>
+            <th class="text-end">{{ t.panel_actions }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for certificate in page.object_list %}
+            <tr>
+              <td>
+                <a class="panel-code" href="{% url 'panel:certificate_detail' certificate.pk %}">{{ certificate.code }}</a>
+                {% if certificate.models_count %}
+                  <div class="panel-muted">{{ certificate.models_count }} {{ t.panel_models }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {{ certificate.applicant }}
+                {% if certificate.manufacturer %}<div class="panel-muted">{{ certificate.manufacturer }}</div>{% endif %}
+              </td>
+              <td>
+                {{ certificate.product }}
+                {% if certificate.brand %}<div class="panel-muted">{{ certificate.brand }}</div>{% endif %}
+              </td>
+              <td class="panel-muted">{{ certificate.type_label }}</td>
+              <td class="panel-muted">{{ certificate.expiry_date|date:"Y-m-d" }}</td>
+              <td><span class="panel-badge is-{{ certificate.computed_status }}">{{ certificate.status_label }}</span></td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:certificate_detail' certificate.pk %}">{{ t.panel_view }}</a>
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:certificate_edit' certificate.pk %}">{{ t.panel_edit }}</a>
+                  <a class="btn btn-sm btn-primary" href="{% url 'panel:certificate_pdf' certificate.pk 'en' %}?download=1">PDF</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-pagination">
+      <span class="panel-muted">
+        {{ t.panel_page }} {{ page.number }} {{ t.panel_of }} {{ page.paginator.num_pages }}
+        · {{ total_results }} {{ t.panel_results }}
+      </span>
+      <nav aria-label="{{ t.panel_pagination }}">
+        <ul class="pagination pagination-sm">
+          <li class="page-item{% if not page.has_previous %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_previous %}{{ page.previous_page_number }}{% else %}1{% endif %}">{{ t.panel_previous }}</a>
+          </li>
+          {% for number in page.paginator.page_range %}
+            {% if number == page.number %}
+              <li class="page-item active"><span class="page-link">{{ number }}</span></li>
+            {% elif number >= page.number|add:"-2" and number <= page.number|add:"2" %}
+              <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ number }}">{{ number }}</a></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item{% if not page.has_next %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_next %}{{ page.next_page_number }}{% else %}{{ page.paginator.num_pages }}{% endif %}">{{ t.panel_next }}</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  {% else %}
+    <div class="panel-empty">
+      <strong>{{ t.panel_no_results }}</strong>
+      <p class="mb-3">{{ t.panel_no_results_text }}</p>
+      <a class="btn btn-primary" href="{% url 'panel:certificate_create' %}">+ {{ t.panel_new_certificate }}</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

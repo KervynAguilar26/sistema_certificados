@@ -1,0 +1,58 @@
+{% load static %}
+<footer class="site-footer" id="pie">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a class="brand brand-light" href="{% url 'core:home' %}#inicio">
+        {% if site.logo %}
+          <img src="{{ site.logo.url }}" alt="{{ site.site_name }}" class="brand-logo">
+        {% else %}
+          <img src="{% static 'img/logo.png' %}" alt="{{ site.site_name }}" class="brand-logo">
+        {% endif %}
+        <span class="brand-copy">
+          <strong>{{ site.site_name }}</strong>
+          {% if site.tagline %}<small>{{ site.tagline }}</small>{% endif %}
+        </span>
+      </a>
+      <p class="footer-note">{{ t.verify_public_disclaimer }}</p>
+    </div>
+
+    <div>
+      <h2>{{ t.footer_quick_links }}</h2>
+      <ul class="footer-links">
+        <li><a href="{% url 'core:home' %}#nosotros">{{ t.nav_about }}</a></li>
+        <li><a href="{% url 'core:home' %}#servicios">{{ t.nav_services }}</a></li>
+        <li><a href="{% url 'core:home' %}#equipo">{{ t.nav_team }}</a></li>
+        <li><a href="{% url 'core:home' %}#contacto">{{ t.nav_contact }}</a></li>
+        <li><a href="{% url 'certificates:verify' %}">{{ t.footer_verify }}</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>{{ t.footer_contact }}</h2>
+      <ul class="footer-contact">
+        {% if site.address %}<li><span aria-hidden="true">&#9906;</span>{{ site.address }}</li>{% endif %}
+        {% if site.email %}<li><span aria-hidden="true">&#9993;</span><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>{% endif %}
+        {% if site.phone %}<li><span aria-hidden="true">&#9742;</span><a href="tel:{{ site.phone }}">{{ site.phone }}</a></li>{% endif %}
+        {% if site.website %}<li><span aria-hidden="true">&#9679;</span><a href="https://{{ site.website }}" target="_blank" rel="noopener noreferrer">{{ site.website }}</a></li>{% endif %}
+      </ul>
+    </div>
+
+    <div>
+      <h2>{{ t.footer_hours }}</h2>
+      <p class="footer-note">{{ t.contact_hours }}</p>
+      {% if site.social_linkedin or site.social_facebook or site.social_instagram or site.social_youtube %}
+        <div class="footer-social">
+          {% if site.social_linkedin %}<a href="{{ site.social_linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}
+          {% if site.social_facebook %}<a href="{{ site.social_facebook }}" target="_blank" rel="noopener noreferrer">Facebook</a>{% endif %}
+          {% if site.social_instagram %}<a href="{{ site.social_instagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>{% endif %}
+          {% if site.social_youtube %}<a href="{{ site.social_youtube }}" target="_blank" rel="noopener noreferrer">YouTube</a>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>&copy; {{ current_year }} {{ site.site_name }}. {{ t.footer_rights }}</p>
+    <a href="{% url 'certificates:verify' %}">{{ t.footer_verify }}</a>
+  </div>
+</footer>

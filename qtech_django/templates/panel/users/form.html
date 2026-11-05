@@ -1,0 +1,79 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{% if is_edit %}{{ t.panel_edit_user }}{% else %}{{ t.panel_new_user }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}{{ t.panel_edit_user }}{% else %}{{ t.panel_new_user }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_administration }}</p>
+    <h1>{% if is_edit %}{{ t.panel_edit_user }}{% else %}{{ t.panel_new_user }}{% endif %}</h1>
+    <p class="panel-subtitle">
+      {% if is_edit %}{{ target_user.email }}{% else %}{{ t.panel_user_form_subtitle }}{% endif %}
+    </p>
+  </div>
+  <div class="panel-head-actions">
+    {% if is_edit %}
+      <a class="btn btn-outline-secondary" href="{% url 'panel:user_password' target_user.pk %}">{{ t.panel_change_password }}</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'panel:user_list' %}">← {{ t.panel_back_to_list }}</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <section class="panel-card">
+      <div class="panel-card-body">
+        <form class="panel-form" method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="panel-form-grid">
+            {% for field in form %}
+              {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="is-full">
+                  <div class="form-check">
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  </div>
+                  {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+              {% else %}
+                <div class="{% if field.name == 'password1' or field.name == 'password2' %}is-full{% endif %}">
+                  <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %}<span class="panel-required" aria-hidden="true">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                  {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="panel-actions-bar">
+            <button class="btn btn-primary" type="submit">{% if is_edit %}{{ t.panel_save_changes }}{% else %}{{ t.panel_create_user }}{% endif %}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'panel:user_list' %}">{{ t.panel_cancel }}</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-xl-4">
+    <section class="panel-card">
+      <div class="panel-card-body">
+        <h2 class="h6 fw-bold">{{ t.panel_roles_title }}</h2>
+        <p class="form-text mb-2"><strong>{{ t.panel_role_superadmin }}</strong>: {{ t.panel_role_superadmin_help }}</p>
+        <p class="form-text mb-0"><strong>{{ t.panel_role_analyst }}</strong>: {{ t.panel_role_analyst_help }}</p>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

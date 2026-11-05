@@ -1,0 +1,101 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{{ t.panel_activity }}{% endblock %}
+{% block page_title %}{{ t.panel_activity }}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_management }}</p>
+    <h1>{{ t.panel_activity }}</h1>
+    <p class="panel-subtitle">{{ t.panel_activity_subtitle }}</p>
+  </div>
+</div>
+
+<section class="panel-card mb-4">
+  <div class="panel-card-body">
+    <form class="row g-2 align-items-end" method="get" action="{% url 'panel:activity' %}">
+      <div class="col-lg-5">
+        <label class="form-label" for="event-filter">{{ t.panel_event }}</label>
+        <select id="event-filter" class="form-select" name="event">
+          <option value="">{{ t.panel_filter_all }}</option>
+          {% for choice in event_choices %}
+            <option value="{{ choice.value }}"{% if event_filter == choice.value %} selected{% endif %}>{{ choice.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-4 d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1" type="submit">{{ t.panel_filter }}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'panel:activity' %}">{{ t.panel_clear }}</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel-card">
+  <div class="panel-card-head">
+    <h2>{{ t.panel_audit_log }}</h2>
+  </div>
+
+  {% if page.object_list %}
+    <div class="table-responsive">
+      <table class="table panel-table align-middle">
+        <thead>
+          <tr>
+            <th>{{ t.panel_date }}</th>
+            <th>{{ t.panel_certificate }}</th>
+            <th>{{ t.panel_event }}</th>
+            <th>{{ t.panel_user }}</th>
+            <th>{{ t.panel_detail }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in page.object_list %}
+            <tr>
+              <td class="panel-muted">{{ event.created_at|date:"Y-m-d H:i" }}</td>
+              <td>
+                <a class="panel-code" href="{% url 'panel:certificate_detail' event.certificate.pk %}">{{ event.certificate.code }}</a>
+              </td>
+              <td>{{ event.display_label }}</td>
+              <td class="panel-muted">{{ event.user.email|default:"—" }}</td>
+              <td class="panel-muted">
+                {{ event.message|default:"—" }}
+                {% if event.ip_address %}<div>{{ event.ip_address }}</div>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-pagination">
+      <span class="panel-muted">
+        {{ t.panel_page }} {{ page.number }} {{ t.panel_of }} {{ page.paginator.num_pages }}
+        · {{ page.paginator.count }} {{ t.panel_results }}
+      </span>
+      <nav aria-label="{{ t.panel_pagination }}">
+        <ul class="pagination pagination-sm">
+          <li class="page-item{% if not page.has_previous %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_previous %}{{ page.previous_page_number }}{% else %}1{% endif %}">{{ t.panel_previous }}</a>
+          </li>
+          {% for number in page.paginator.page_range %}
+            {% if number == page.number %}
+              <li class="page-item active"><span class="page-link">{{ number }}</span></li>
+            {% elif number >= page.number|add:"-2" and number <= page.number|add:"2" %}
+              <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ number }}">{{ number }}</a></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item{% if not page.has_next %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_next %}{{ page.next_page_number }}{% else %}{{ page.paginator.num_pages }}{% endif %}">{{ t.panel_next }}</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  {% else %}
+    <div class="panel-empty">
+      <strong>{{ t.panel_no_activity }}</strong>
+      <p class="mb-0">{{ t.panel_no_activity_text }}</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static qtech_tags %}
+
+{% block title %}{{ qtech_t.admin_login_title }} | {{ qtech_t.admin_site_title }}{% endblock %}
+{% block bodyclass %}{{ block.super }} login qtech-login-page{% endblock %}
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="qtech-login">
+  <section class="qtech-login-card">
+    <div class="qtech-login-brand">
+      <span class="qtech-mark qtech-mark-lg" aria-hidden="true">Q</span>
+      <div>
+        <h1>{{ qtech_t.admin_login_title }}</h1>
+        <p>{{ qtech_t.admin_login_subtitle }}</p>
+      </div>
+    </div>
+
+    <div class="qtech-login-lang">
+      <span>{{ qtech_t.admin_language }}:</span>
+      {% for lang in qtech_admin_languages %}
+        <a href="{% admin_language_url request lang.code %}" {% if lang.code == qtech_lang %}class="is-active" aria-current="true"{% endif %}>{{ lang.name }}</a>
+      {% endfor %}
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+      <p class="qtech-alert qtech-alert-error">{{ qtech_t.form_error }}</p>
+    {% endif %}
+    {% for error in form.non_field_errors %}
+      <p class="qtech-alert qtech-alert-error">{{ error }}</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+      <p class="qtech-alert qtech-alert-warning">{{ qtech_t.admin_permission_denied }}</p>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form" class="qtech-login-form">
+      {% csrf_token %}
+      <div class="qtech-field">
+        <label for="{{ form.username.id_for_label }}">{{ qtech_t.admin_login_email }}</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div class="qtech-field">
+        <label for="{{ form.password.id_for_label }}">{{ qtech_t.admin_login_password }}</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+        <input type="hidden" name="next" value="{{ next }}">
+      </div>
+      <button class="qtech-btn qtech-btn-primary qtech-btn-block" type="submit">{{ qtech_t.admin_login_button }}</button>
+    </form>
+
+    <p class="qtech-login-note">{{ qtech_t.admin_forms_spanish }}</p>
+    <p class="qtech-login-note">{{ qtech_t.admin_security_note }}</p>
+  </section>
+
+  <aside class="qtech-login-side">
+    <h2>{{ qtech_t.admin_site_header }}</h2>
+    <p>{{ qtech_t.admin_dashboard_subtitle }}</p>
+    <ul>
+      <li>{{ qtech_t.admin_interface_zh_en }}</li>
+      <li>{{ qtech_t.admin_session_expires }}</li>
+      <li>{{ qtech_t.admin_not_public }}</li>
+    </ul>
+    <a class="qtech-btn qtech-btn-light" href="{{ qtech_public_url }}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_view_site }} &#8599;</a>
+  </aside>
+</div>
+{% endblock %}

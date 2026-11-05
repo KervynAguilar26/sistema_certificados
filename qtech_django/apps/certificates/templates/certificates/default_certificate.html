@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ t.cert_title }} · {{ code }}</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", "Noto Sans SC",
+      "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Zen Hei",
+      Arial, sans-serif;
+    color: #1f2937;
+    background: #e5e7eb;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sheet {
+    position: relative;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background-color: #ffffff;
+    {% if background %}background-image: url("{{ background }}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;{% endif %}
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .sheet:last-of-type { page-break-after: auto; }
+  .content {
+    position: relative;
+    z-index: 1;
+    min-height: 297mm;
+    padding: 32mm 22mm 26mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 62px; height: 62px; object-fit: contain; }
+  .brand-copy { display: flex; flex-direction: column; gap: 3px; }
+  .brand-copy strong { font-size: 15px; letter-spacing: .03em; color: #111827; }
+  .brand-copy span { font-size: 10.5px; color: #6b7280; }
+  .brand.small .logo { width: 46px; height: 46px; }
+  .divider {
+    height: 2px;
+    margin: 16px 0 22px;
+    background: linear-gradient(90deg, #b8860b, #f5d67b, #b8860b);
+  }
+  h1 {
+    margin: 0 0 6px;
+    text-align: center;
+    font-size: 27px;
+    line-height: 1.18;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #111827;
+  }
+  .code {
+    margin: 0 0 22px;
+    text-align: center;
+    font-size: 14px;
+    color: #374151;
+  }
+  .code strong { color: #111827; letter-spacing: .04em; }
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.data th, table.data td {
+    padding: 7px 0;
+    vertical-align: top;
+    text-align: left;
+    font-size: 12.5px;
+    line-height: 1.5;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  table.data th {
+    width: 31%;
+    padding-right: 10px;
+    color: #4b5563;
+    font-weight: 700;
+  }
+  table.data td { color: #111827; overflow-wrap: anywhere; }
+  .address {
+    display: block;
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #4b5563;
+    font-weight: 400;
+  }
+  .description {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-left: 3px solid #d4af37;
+    background: #fffbeb;
+    color: #374151;
+    font-size: 11.5px;
+    line-height: 1.6;
+  }
+  .spacer { flex: 1 1 auto; min-height: 20px; }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-top: 18px;
+  }
+  .qr { width: 120px; text-align: center; flex: 0 0 120px; }
+  .qr img { width: 100px; height: 100px; display: block; margin: 0 auto 4px; }
+  .qr span { font-size: 8.5px; font-weight: 700; color: #374151; }
+  .verification {
+    flex: 1 1 auto;
+    text-align: right;
+    font-size: 9px;
+    line-height: 1.5;
+    color: #6b7280;
+    overflow-wrap: anywhere;
+  }
+  .verification strong { display: block; color: #374151; font-size: 9.5px; margin-bottom: 3px; }
+  .verification span { display: block; }
+  .page-number {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #b91c1c;
+    letter-spacing: .05em;
+  }
+  .annex-title { margin-top: 10px; font-size: 24px; }
+  h2 {
+    margin: 24px 0 12px;
+    font-size: 13px;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .models {
+    font-size: 11.5px;
+    line-height: 1.8;
+    color: #111827;
+    text-align: justify;
+    overflow-wrap: anywhere;
+  }
+  @media screen {
+    .sheet { margin: 18px auto; box-shadow: 0 18px 45px rgba(15, 23, 42, .22); }
+    body { padding: 10px 0 30px; }
+  }
+  @media print {
+    body { background: #ffffff; padding: 0; }
+    .sheet { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<section class="sheet">
+  <div class="content">
+    <header class="brand">
+      {% if logo %}<img class="logo" src="{{ logo }}" alt="{{ site.site_name }}">{% endif %}
+      <div class="brand-copy">
+        <strong>{{ site.site_name }}</strong>
+        <span>{{ site.tagline }}</span>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <h1>{{ certificate_type }}</h1>
+    <p class="code">{{ t.cert_no }} <strong>{{ code }}</strong></p>
+
+    <table class="data">
+      {% if applicant %}
+      <tr>
+        <th>{{ t.cert_applicant }}</th>
+        <td><strong>{{ applicant }}</strong></td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>{{ t.cert_manufacturer }}</th>
+        <td>
+          <strong>{{ manufacturer }}</strong>
+          {% if manufacturer_address %}<span class="address">{{ manufacturer_address }}</span>{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>{{ t.cert_product }}</th>
+        <td><strong>{{ product }}</strong></td>
+      </tr>
+      {% if brand %}
+      <tr>
+        <th>{{ t.cert_brand }}</th>
+        <td>{{ brand }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>{{ t.cert_models }}</th>
+        <td>{{ models_display }}</td>
+      </tr>
+      {% if show_parameters %}
+      <tr>
+        <th>{{ t.cert_parameters }}</th>
+        <td>{{ test_parameters }}</td>
+      </tr>
+      {% endif %}
+      {% if test_standards %}
+      <tr>
+        <th>{{ t.cert_standards }}</th>
+        <td>{{ test_standards }}</td>
+      </tr>
+      {% endif %}
+      {% if test_report %}
+      <tr>
+        <th>{{ t.cert_report }}</th>
+        <td>{{ test_report }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>{{ t.cert_validity }}</th>
+        <td>{{ t.cert_issued }}: {{ issue_date }} &nbsp;|&nbsp; {{ t.cert_expires }}: {{ expiry_date }}</td>
+      </tr>
+    </table>
+
+    {% if product_description %}
+    <div class="description">{{ product_description|linebreaksbr }}</div>
+    {% endif %}
+
+    <div class="spacer"></div>
+
+    <footer class="footer">
+      <div class="qr">
+        {% if qr_code %}<img src="{{ qr_code }}" alt="QR">{% endif %}
+        <span>{{ t.cert_scan }}</span>
+      </div>
+      <div class="verification">
+        <strong>{{ t.cert_verification_note }}</strong>
+        <span>{{ validation_url }}</span>
+        <span>{{ site.site_name }} · {{ site.website }} · {{ site.email }}</span>
+        <span>{{ t.cert_generated }} {{ generated_at|date:"d/m/Y H:i" }}</span>
+      </div>
+    </footer>
+
+    <div class="page-number">{{ t.cert_page }} 01 {{ t.cert_of }} {{ page_count }}</div>
+  </div>
+</section>
+
+{% for page in annex_pages %}
+<section class="sheet"{% if background_annex %} style="background-image: url('{{ background_annex }}');"{% endif %}>
+  <div class="content">
+    <header class="brand small">
+      {% if logo %}<img class="logo" src="{{ logo }}" alt="{{ site.site_name }}">{% endif %}
+      <div class="brand-copy">
+        <strong>{{ site.site_name }}</strong>
+        <span>{{ site.tagline }}</span>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <h1 class="annex-title">{{ t.cert_annex_title }}</h1>
+    <p class="code">{{ t.cert_no }} <strong>{{ code }}</strong></p>
+
+    <h2>{{ t.cert_annex_models }}</h2>
+    <div class="models">{{ page.models|join:", " }}</div>
+
+    <div class="spacer"></div>
+    <div class="page-number">{{ t.cert_page }} 0{{ page.number }} {{ t.cert_of }} {{ page_count }}</div>
+  </div>
+</section>
+{% endfor %}
+
+</body>
+</html>

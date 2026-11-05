@@ -1,0 +1,117 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{{ t.panel_users }}{% endblock %}
+{% block page_title %}{{ t.panel_users }}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_administration }}</p>
+    <h1>{{ t.panel_users }}</h1>
+    <p class="panel-subtitle">{{ t.panel_users_subtitle }}</p>
+  </div>
+  <div class="panel-head-actions">
+    <a class="btn btn-primary" href="{% url 'panel:user_create' %}">+ {{ t.panel_new_user }}</a>
+  </div>
+</div>
+
+<section class="panel-card mb-4">
+  <div class="panel-card-body">
+    <form class="row g-2 align-items-end" method="get" action="{% url 'panel:user_list' %}">
+      <div class="col-lg-8">
+        <label class="form-label" for="user-search">{{ t.panel_search }}</label>
+        <input id="user-search" class="form-control" type="search" name="q" value="{{ query }}" placeholder="{{ t.panel_user_search_placeholder }}" autocomplete="off">
+      </div>
+      <div class="col-lg-4 d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1" type="submit">{{ t.panel_filter }}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'panel:user_list' %}">{{ t.panel_clear }}</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel-card">
+  <div class="panel-card-head">
+    <h2>{{ total_results }} {{ t.panel_results }}</h2>
+  </div>
+
+  {% if page.object_list %}
+    <div class="table-responsive">
+      <table class="table panel-table align-middle">
+        <thead>
+          <tr>
+            <th>{{ t.panel_name }}</th>
+            <th>{{ t.panel_email }}</th>
+            <th>{{ t.panel_role }}</th>
+            <th>{{ t.panel_status }}</th>
+            <th>{{ t.panel_last_login }}</th>
+            <th class="text-end">{{ t.panel_actions }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in page.object_list %}
+            <tr>
+              <td>
+                <strong>{{ user.full_name|default:"—" }}</strong>
+                {% if user == request.user %}<span class="panel-muted">· {{ t.panel_you }}</span>{% endif %}
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                {% if user.is_superadmin %}
+                  <span class="badge text-bg-warning">{{ t.panel_role_superadmin }}</span>
+                {% else %}
+                  <span class="badge text-bg-light border">{{ t.panel_role_analyst }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_active %}
+                  <span class="panel-badge is-valid">{{ t.panel_active }}</span>
+                {% else %}
+                  <span class="panel-badge is-blocked">{{ t.panel_inactive }}</span>
+                {% endif %}
+              </td>
+              <td class="panel-muted">{{ user.last_login|date:"Y-m-d H:i"|default:t.panel_never }}</td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:user_edit' user.pk %}">{{ t.panel_edit }}</a>
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:user_password' user.pk %}">{{ t.panel_change_password }}</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-pagination">
+      <span class="panel-muted">
+        {{ t.panel_page }} {{ page.number }} {{ t.panel_of }} {{ page.paginator.num_pages }}
+        · {{ total_results }} {{ t.panel_results }}
+      </span>
+      <nav aria-label="{{ t.panel_pagination }}">
+        <ul class="pagination pagination-sm">
+          <li class="page-item{% if not page.has_previous %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_previous %}{{ page.previous_page_number }}{% else %}1{% endif %}">{{ t.panel_previous }}</a>
+          </li>
+          {% for number in page.paginator.page_range %}
+            {% if number == page.number %}
+              <li class="page-item active"><span class="page-link">{{ number }}</span></li>
+            {% elif number >= page.number|add:"-2" and number <= page.number|add:"2" %}
+              <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ number }}">{{ number }}</a></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item{% if not page.has_next %} disabled{% endif %}">
+            <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={% if page.has_next %}{{ page.next_page_number }}{% else %}{{ page.paginator.num_pages }}{% endif %}">{{ t.panel_next }}</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  {% else %}
+    <div class="panel-empty">
+      <strong>{{ t.panel_no_users }}</strong>
+      <p class="mb-3">{{ t.panel_no_users_text }}</p>
+      <a class="btn btn-primary" href="{% url 'panel:user_create' %}">+ {{ t.panel_new_user }}</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

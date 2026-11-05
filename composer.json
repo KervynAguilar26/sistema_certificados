@@ -1,8 +1,0 @@
-{
-    "require": {
-        "phpoffice/phppresentation": "^1.2",
-        "endroid/qr-code": "^4.8",
-        "dompdf/dompdf": "^3.1",
-        "mpdf/mpdf": "^8.3"
-    }
-}

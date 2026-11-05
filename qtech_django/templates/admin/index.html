@@ -1,0 +1,161 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard qtech-dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div class="qtech-dash">
+  <header class="qtech-dash-head">
+    <div>
+      <p class="qtech-kicker">{{ qtech_t.admin_secure_area }}</p>
+      <h1>{{ qtech_t.admin_dashboard }}</h1>
+      <p class="qtech-subtitle">{{ qtech_t.admin_dashboard_subtitle }}</p>
+    </div>
+    <div class="qtech-head-actions">
+      <a class="qtech-btn qtech-btn-primary" href="{% url 'admin:certificates_certificate_add' %}">+ {{ qtech_t.admin_new_certificate }}</a>
+      <a class="qtech-btn" href="{% url 'admin:certificates_certificatetemplate_changelist' %}">{{ qtech_t.admin_manage_templates }}</a>
+    </div>
+  </header>
+
+  <section class="qtech-stats" aria-label="{{ qtech_t.admin_dashboard }}">
+    <a class="qtech-stat" href="{% url 'admin:certificates_certificate_changelist' %}">
+      <span class="qtech-stat-label">{{ qtech_t.admin_total_certificates }}</span>
+      <strong>{{ qtech_stats.total }}</strong>
+    </a>
+    <a class="qtech-stat stat-valid" href="{% url 'admin:certificates_certificate_changelist' %}?status__exact=activo">
+      <span class="qtech-stat-label">{{ qtech_t.admin_active_certificates }}</span>
+      <strong>{{ qtech_stats.active }}</strong>
+    </a>
+    <a class="qtech-stat stat-expired" href="{% url 'admin:certificates_certificate_changelist' %}">
+      <span class="qtech-stat-label">{{ qtech_t.admin_expired_certificates }}</span>
+      <strong>{{ qtech_stats.expired }}</strong>
+    </a>
+    <a class="qtech-stat stat-blocked" href="{% url 'admin:certificates_certificate_changelist' %}?status__exact=bloqueado">
+      <span class="qtech-stat-label">{{ qtech_t.admin_blocked_certificates }}</span>
+      <strong>{{ qtech_stats.blocked }}</strong>
+    </a>
+    <a class="qtech-stat stat-warning" href="{% url 'admin:certificates_certificate_changelist' %}">
+      <span class="qtech-stat-label">{{ qtech_t.admin_expiring_soon }}</span>
+      <strong>{{ qtech_stats.expiring_soon }}</strong>
+    </a>
+    <a class="qtech-stat stat-info" href="{% url 'admin:certificates_validationlog_changelist' %}">
+      <span class="qtech-stat-label">{{ qtech_t.admin_validations_7d }}</span>
+      <strong>{{ qtech_stats.validations_7d }}</strong>
+    </a>
+  </section>
+
+  <div class="qtech-dash-grid">
+    <section class="qtech-panel qtech-panel-wide">
+      <div class="qtech-panel-head">
+        <h2>{{ qtech_t.admin_recent_certificates }}</h2>
+        <a href="{% url 'admin:certificates_certificate_changelist' %}">{{ qtech_t.admin_view_all }}</a>
+      </div>
+      {% if qtech_recent_certificates %}
+        <div class="qtech-table-wrap">
+          <table class="qtech-table">
+            <thead>
+              <tr>
+                <th>{{ qtech_t.admin_status }}</th>
+                <th>{{ qtech_t.admin_certificate_data }}</th>
+                <th>{{ qtech_t.admin_certificate_template }}</th>
+                <th>{{ qtech_t.admin_expires }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for certificate in qtech_recent_certificates %}
+                <tr>
+                  <td>
+                    <span class="qtech-status status-{{ certificate.computed_status }}">{{ certificate.status_label }}</span>
+                  </td>
+                  <td>
+                    <a class="qtech-strong" href="{% url 'admin:certificates_certificate_change' certificate.pk %}">{{ certificate.code }}</a>
+                    <span class="qtech-muted">{{ certificate.applicant }} · {{ certificate.product }}</span>
+                  </td>
+                  <td>{% if certificate.template %}{{ certificate.template.name }}{% else %}<span class="qtech-muted">{{ qtech_t.admin_no_template }}</span>{% endif %}</td>
+                  <td>{{ certificate.expiry_date|date:"Y-m-d" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="qtech-empty">{{ qtech_t.admin_no_recent }}</p>
+      {% endif %}
+    </section>
+
+    <aside class="qtech-panel">
+      <div class="qtech-panel-head"><h2>{{ qtech_t.admin_quick_actions }}</h2></div>
+      <ul class="qtech-quick">
+        <li><a href="{% url 'admin:certificates_certificate_add' %}"><span>+</span>{{ qtech_t.admin_new_certificate }}</a></li>
+        <li><a href="{% url 'admin:certificates_certificatetemplate_changelist' %}"><span>&#9635;</span>{{ qtech_t.admin_manage_templates }}</a></li>
+        <li><a href="{% url 'admin:certificates_certificatetype_changelist' %}"><span>&#9670;</span>{{ qtech_t.admin_manage_types }}</a></li>
+        <li><a href="{% url 'admin:accounts_user_changelist' %}"><span>&#9787;</span>{{ qtech_t.admin_manage_users }}</a></li>
+        <li><a href="{{ qtech_public_url }}" target="_blank" rel="noopener noreferrer"><span>&#8599;</span>{{ qtech_t.admin_view_site }}</a></li>
+        <li><a href="{% url 'certificates:verify' %}" target="_blank" rel="noopener noreferrer"><span>&#10003;</span>{{ qtech_t.admin_open_validation }}</a></li>
+      </ul>
+      <p class="qtech-note">{{ qtech_t.admin_security_note }}</p>
+    </aside>
+  </div>
+
+  <div class="qtech-dash-grid">
+    <section class="qtech-panel">
+      <div class="qtech-panel-head">
+        <h2>{{ qtech_t.admin_recent_activity }}</h2>
+        <a href="{% url 'admin:certificates_certificateevent_changelist' %}">{{ qtech_t.admin_view_all }}</a>
+      </div>
+      {% if qtech_recent_events %}
+        <ul class="qtech-activity">
+          {% for event in qtech_recent_events %}
+            <li>
+              <span class="qtech-dot"></span>
+              <div>
+                <a href="{% url 'admin:certificates_certificate_change' event.certificate.pk %}">{{ event.certificate.code }}</a>
+                <span>{{ event.get_event_display }}</span>
+                <small>{{ event.created_at|date:"Y-m-d H:i" }}{% if event.user %} · {{ event.user.email }}{% endif %}</small>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="qtech-empty">{{ qtech_t.admin_no_recent }}</p>
+      {% endif %}
+    </section>
+
+    <section class="qtech-panel">
+      <div class="qtech-panel-head">
+        <h2>{{ qtech_t.admin_recent_messages }}</h2>
+        <a href="{% url 'admin:core_contactmessage_changelist' %}">{{ qtech_t.admin_view_all }}</a>
+      </div>
+      {% if qtech_recent_messages %}
+        <ul class="qtech-activity">
+          {% for message in qtech_recent_messages %}
+            <li>
+              <span class="qtech-dot{% if not message.is_read %} is-unread{% endif %}"></span>
+              <div>
+                <a href="{% url 'admin:core_contactmessage_change' message.pk %}">{{ message.name }}</a>
+                <span>{{ message.email }}</span>
+                <small>{{ message.created_at|date:"Y-m-d H:i" }}{% if not message.is_read %} · {{ qtech_t.admin_unread }}{% endif %}</small>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="qtech-empty">{{ qtech_t.admin_no_recent }}</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="qtech-panel">
+    <div class="qtech-panel-head">
+      <h2>{{ qtech_t.admin_quick_links }}</h2>
+      <span class="qtech-muted">{{ qtech_t.admin_forms_spanish }}</span>
+    </div>
+    <div class="qtech-apps">
+      {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+    </div>
+  </section>
+</div>
+{% endblock %}

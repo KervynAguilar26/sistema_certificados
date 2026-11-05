@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ qtech_t.admin_logout }} | {{ qtech_t.admin_site_title }}{% endblock %}
+{% block bodyclass %}{{ block.super }} qtech-logout-page{% endblock %}
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="qtech-logout">
+  <div class="qtech-logout-card">
+    <span class="qtech-mark qtech-mark-lg" aria-hidden="true">Q</span>
+    <h1>{{ qtech_t.admin_logout }}</h1>
+    <p>{{ qtech_t.admin_security_note }}</p>
+    <a class="qtech-btn qtech-btn-primary" href="{% url 'admin:login' %}">{{ qtech_t.admin_login_button }}</a>
+    <a class="qtech-btn" href="{{ qtech_public_url }}">{{ qtech_t.admin_public_site }}</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% load i18n static qtech_tags %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:qtech_t.admin_site_title }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/admin-qtech.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <span class="qtech-mark" aria-hidden="true">Q</span>
+    <span class="qtech-brand-text">
+      <strong>{{ site_header|default:qtech_t.admin_site_header }}</strong>
+      <small>{{ qtech_t.admin_private_area }}</small>
+    </span>
+  </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div class="qtech-topbar">
+  <div class="qtech-topbar-links">
+    <a href="{{ qtech_public_url }}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_public_site }} &#8599;</a>
+    <a href="{% url 'certificates:verify' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_open_validation }} &#8599;</a>
+  </div>
+  <div class="qtech-lang-switch" aria-label="{{ qtech_t.admin_language }}">
+    <span>{{ qtech_t.admin_language }}:</span>
+    {% for lang in qtech_admin_languages %}
+      <a href="{% admin_language_url request lang.code %}" {% if lang.code == qtech_lang %}class="is-active" aria-current="true"{% endif %}>{{ lang.name }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="qtech-footer">
+  <span>{{ qtech_t.admin_secure_area }} · {{ qtech_t.admin_session_expires }}</span>
+  <span>{{ site_title|default:qtech_t.admin_site_title }}</span>
+</div>
+{% endblock %}

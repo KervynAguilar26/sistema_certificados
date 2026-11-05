@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ meta_title }} · {{ site.site_name }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block body_class %}verify-page{% endblock %}
+
+{% block content %}
+<section class="verify-hero">
+  <div class="container verify-hero-inner">
+    <div class="verify-hero-copy">
+      <p class="eyebrow eyebrow-light">{{ t.nav_verify }}</p>
+      <h1>{{ t.verify_title }}</h1>
+      <p>{{ t.verify_subtitle }}</p>
+    </div>
+    <form class="verify-search" method="get" action="{% url 'certificates:verify' %}" role="search">
+      <label for="verify-query">{{ t.verify_code_or_token }}</label>
+      <div class="verify-search-row">
+        <input id="verify-query" name="q" type="search" value="{{ query }}" placeholder="{{ t.verify_code_or_token_placeholder }}" maxlength="200" autocomplete="off" required>
+        <button class="btn btn-primary" type="submit">{{ t.verify_button }}</button>
+      </div>
+      <p class="verify-hint">{{ t.verify_search_hint }}</p>
+    </form>
+  </div>
+</section>
+
+<section class="section verify-section">
+  <div class="container verify-container">
+    {% if result %}
+      <div class="result-card result-{{ result_tone }}" role="status" aria-live="polite">
+        <div class="result-heading">
+          <span class="result-icon" aria-hidden="true">
+            {% if result_tone == 'valid' %}&#10003;{% elif result_tone == 'expired' %}!{% elif result_tone == 'blocked' %}&times;{% else %}?{% endif %}
+          </span>
+          <div>
+            <h2>{{ result_title }}</h2>
+            {% if query %}<p class="result-query">{{ t.verify_result_for }}: <strong>{{ query }}</strong></p>{% endif %}
+          </div>
+        </div>
+        {% if result_description %}<p class="result-description">{{ result_description }}</p>{% endif %}
+
+        {% if certificate and result != 'not_found' and result != 'rate_limited' %}
+          <dl class="result-details">
+            <div><dt>{{ t.verify_type }}</dt><dd>{{ type_label }}</dd></div>
+            <div><dt>{{ t.verify_code }}</dt><dd><strong>{{ certificate.code }}</strong></dd></div>
+            <div><dt>{{ t.verify_product }}</dt><dd>{{ data.product|default:"—" }}</dd></div>
+            <div><dt>{{ t.verify_applicant }}</dt><dd>{{ data.applicant|default:"—" }}</dd></div>
+            <div>
+              <dt>{{ t.verify_manufacturer }}</dt>
+              <dd>
+                {{ data.manufacturer|default:"—" }}
+                {% if data.manufacturer_address %}<small class="detail-note">{{ data.manufacturer_address }}</small>{% endif %}
+              </dd>
+            </div>
+            {% if data.brand %}<div><dt>{{ t.verify_brand }}</dt><dd>{{ data.brand }}</dd></div>{% endif %}
+            <div>
+              <dt>{{ t.verify_models }}</dt>
+              <dd>
+                {% if models %}
+                  <span class="models-total">{{ models_count }} {{ t.verify_models_count }}</span>
+                  <div class="model-list{% if models_count > 12 %} model-list-scroll{% endif %}">
+                    {% for model in models %}<span class="model-tag">{{ model }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  <span class="muted">{{ t.verify_no_models }}</span>
+                {% endif %}
+              </dd>
+            </div>
+            {% if data.test_standards %}<div><dt>{{ t.verify_standards }}</dt><dd>{{ data.test_standards }}</dd></div>{% endif %}
+            {% if certificate.show_parameters and data.test_parameters %}
+              <div><dt>{{ t.verify_parameters }}</dt><dd>{{ data.test_parameters }}</dd></div>
+            {% endif %}
+            {% if data.test_report %}<div><dt>{{ t.verify_report }}</dt><dd>{{ data.test_report }}</dd></div>{% endif %}
+            <div><dt>{{ t.verify_issue }}</dt><dd>{{ certificate.issue_date|date:"d/m/Y"|default:"—" }}</dd></div>
+            <div><dt>{{ t.verify_expiry }}</dt><dd>{{ certificate.expiry_date|date:"d/m/Y"|default:"—" }}</dd></div>
+            <div><dt>{{ t.verify_status }}</dt><dd><span class="status-pill status-{{ result_tone }}">{{ status_label }}</span></dd></div>
+          </dl>
+          {% if data.product_description %}
+            <div class="result-description-box">
+              <h3>{{ t.cert_description }}</h3>
+              <p>{{ data.product_description|linebreaksbr }}</p>
+            </div>
+          {% endif %}
+        {% endif %}
+
+        <div class="result-actions">
+          <a class="btn btn-outline" href="{% url 'certificates:verify' %}">{{ t.verify_check_another }}</a>
+          <a class="btn btn-ghost" href="{% url 'core:home' %}">{{ t.verify_back }}</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="verify-empty">
+        <div class="verify-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1.2 14.6-3.6-3.6 1.4-1.4 2.2 2.2 5-5 1.4 1.4-6.4 6.4Z"/></svg>
+        </div>
+        <h2>{{ t.verify_search_title }}</h2>
+        <p>{{ t.verify_scan_hint }}</p>
+        <p>{{ t.verify_public_disclaimer }}</p>
+      </div>
+    {% endif %}
+
+    <p class="security-note">
+      <span aria-hidden="true">&#128274;</span>
+      {{ t.verify_security_note }}
+    </p>
+  </div>
+</section>
+{% endblock %}

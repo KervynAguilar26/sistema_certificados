@@ -1,0 +1,232 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{{ certificate.code }}{% endblock %}
+{% block page_title %}{{ t.panel_certificate_detail }}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_certificate_detail }}</p>
+    <h1>{{ certificate.code }}</h1>
+    <p class="panel-subtitle d-flex align-items-center gap-2">
+      <span class="panel-badge is-{{ certificate.computed_status }}">{{ certificate.status_label }}</span>
+      <span>{{ certificate.applicant }}</span>
+    </p>
+  </div>
+  <div class="panel-head-actions">
+    <a class="btn btn-primary" href="{% url 'panel:certificate_edit' certificate.pk %}">{{ t.panel_edit }}</a>
+    <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_list' %}">← {{ t.panel_back_to_list }}</a>
+  </div>
+</div>
+
+<div class="panel-detail-grid">
+  <div class="d-flex flex-column gap-4">
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_certificate_data }}</h2>
+      </div>
+      <div class="panel-card-body">
+        <div class="panel-meta-grid">
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_code }}</div>
+            <div class="panel-meta-value">{{ certificate.code }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_type }}</div>
+            <div class="panel-meta-value">{{ certificate.type_label }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_applicant }}</div>
+            <div class="panel-meta-value">{{ certificate.applicant }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_manufacturer }}</div>
+            <div class="panel-meta-value">{{ certificate.manufacturer|default:"—" }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_product }}</div>
+            <div class="panel-meta-value">{{ certificate.product }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_brand }}</div>
+            <div class="panel-meta-value">{{ certificate.brand|default:"—" }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_issue_date }}</div>
+            <div class="panel-meta-value">{{ certificate.issue_date|date:"Y-m-d" }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_expiry }}</div>
+            <div class="panel-meta-value">{{ certificate.expiry_date|date:"Y-m-d" }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_template }}</div>
+            <div class="panel-meta-value">{{ certificate.template|default:t.panel_default_template }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_analyst }}</div>
+            <div class="panel-meta-value">{{ certificate.analyst|default:"—" }}</div>
+          </div>
+        </div>
+
+        {% if certificate.manufacturer_address %}
+          <hr class="my-4">
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_manufacturer_address }}</div>
+            <div class="panel-meta-value">{{ certificate.manufacturer_address|linebreaksbr }}</div>
+          </div>
+        {% endif %}
+        {% if certificate.product_description %}
+          <div class="panel-meta-item mt-3">
+            <div class="panel-meta-label">{{ t.panel_description }}</div>
+            <div class="panel-meta-value">{{ certificate.product_description|linebreaksbr }}</div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if certificate.models_list %}
+      <section class="panel-card">
+        <div class="panel-card-head">
+          <h2>{{ certificate.models_count }} {{ t.panel_models }}</h2>
+        </div>
+        <div class="panel-card-body">
+          <div class="d-flex flex-wrap gap-2 panel-model-list">
+            {% for model in certificate.models_list %}
+              <span class="badge text-bg-light border">{{ model }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_testing }}</h2>
+      </div>
+      <div class="panel-card-body">
+        <div class="panel-meta-grid">
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_test_standards }}</div>
+            <div class="panel-meta-value">{{ certificate.test_standards|default:"—"|linebreaksbr }}</div>
+          </div>
+          <div class="panel-meta-item">
+            <div class="panel-meta-label">{{ t.panel_test_report }}</div>
+            <div class="panel-meta-value">{{ certificate.test_report|default:"—" }}</div>
+          </div>
+          {% if certificate.show_parameters %}
+            <div class="panel-meta-item" style="grid-column: 1 / -1;">
+              <div class="panel-meta-label">{{ t.panel_test_parameters }}</div>
+              <div class="panel-meta-value">{{ certificate.test_parameters|default:"—"|linebreaksbr }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="d-flex flex-column gap-4">
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_downloads }}</h2>
+      </div>
+      <div class="panel-card-body">
+        <div class="panel-download-list">
+          {% for language in document_languages %}
+            <div class="panel-download-row">
+              <span class="panel-download-lang">{{ language.name }}</span>
+              <div class="d-flex gap-1">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:certificate_html' certificate.pk language.code %}" target="_blank" rel="noopener noreferrer">{{ t.panel_preview }}</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'panel:certificate_pdf' certificate.pk language.code %}?download=1">PDF</a>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'panel:certificate_html' certificate.pk language.code %}?download=1">HTML</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <p class="form-text mt-3 mb-0">{{ t.panel_downloads_help }}</p>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_validation }}</h2>
+      </div>
+      <div class="panel-card-body">
+        <div class="panel-qr mb-3">
+          <img src="{% url 'panel:certificate_qr' certificate.pk %}" alt="{{ t.panel_qr }}" width="190" height="190">
+        </div>
+        <label class="form-label">{{ t.panel_validation_url }}</label>
+        <div class="panel-link-box mb-3">
+          <input id="validation-url" type="text" value="{{ certificate.validation_url }}" readonly>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-copy-target="validation-url">{{ t.panel_copy }}</button>
+        </div>
+        <div class="d-grid gap-2">
+          <a class="btn btn-outline-secondary" href="{{ certificate.validation_url }}" target="_blank" rel="noopener noreferrer">{{ t.panel_open_validation }} ↗</a>
+          <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_qr' certificate.pk %}?download=1">{{ t.panel_download_qr }}</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_actions }}</h2>
+      </div>
+      <div class="panel-card-body d-grid gap-2">
+        <form method="post" action="{% url 'panel:certificate_status' certificate.pk %}" onsubmit="return confirm('{{ t.panel_confirm_status|escapejs }}');">
+          {% csrf_token %}
+          {% if certificate.status == 'activo' %}
+            <button class="btn btn-outline-danger w-100" type="submit">{{ t.panel_suspend }}</button>
+          {% else %}
+            <button class="btn btn-outline-success w-100" type="submit">{{ t.panel_activate }}</button>
+          {% endif %}
+        </form>
+        <form method="post" action="{% url 'panel:certificate_regenerate_token' certificate.pk %}" onsubmit="return confirm('{{ t.panel_confirm_regenerate|escapejs }}');">
+          {% csrf_token %}
+          <button class="btn btn-outline-secondary w-100" type="submit">{{ t.panel_regenerate_token }}</button>
+        </form>
+        <p class="form-text mb-0">{{ t.panel_regenerate_help }}</p>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-card-head">
+        <h2>{{ t.panel_recent_activity }}</h2>
+        <a href="{% url 'panel:activity' %}">{{ t.panel_view_all }}</a>
+      </div>
+      <div class="panel-card-body">
+        {% if events %}
+          <ul class="panel-timeline">
+            {% for event in events %}
+              <li>
+                <div class="panel-event-title">{{ event.display_label }}</div>
+                <div class="panel-event-meta">
+                  {{ event.created_at|date:"Y-m-d H:i" }}
+                  {% if event.user %}· {{ event.user.get_short_name }}{% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="panel-muted mb-0">{{ t.panel_no_activity }}</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll("[data-copy-target]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var input = document.getElementById(button.getAttribute("data-copy-target"));
+      if (!input) return;
+      input.select();
+      navigator.clipboard && navigator.clipboard.writeText(input.value);
+      var original = button.textContent;
+      button.textContent = "{{ t.panel_copied|escapejs }}";
+      setTimeout(function () { button.textContent = original; }, 1600);
+    });
+  });
+</script>
+{% endblock %}

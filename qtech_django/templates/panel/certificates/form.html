@@ -1,0 +1,91 @@
+{% extends "panel/base.html" %}
+
+{% block title %}{% if is_edit %}{{ t.panel_edit_certificate }}{% else %}{{ t.panel_new_certificate }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}{{ t.panel_edit_certificate }}{% else %}{{ t.panel_new_certificate }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel-page-head">
+  <div>
+    <p class="panel-kicker">{{ t.panel_management }}</p>
+    <h1>{% if is_edit %}{{ t.panel_edit_certificate }}{% else %}{{ t.panel_new_certificate }}{% endif %}</h1>
+    <p class="panel-subtitle">{{ t.panel_form_subtitle }}</p>
+  </div>
+  <div class="panel-head-actions">
+    {% if is_edit %}
+      <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_detail' certificate.pk %}">← {{ t.panel_back_to_list }}</a>
+    {% else %}
+      <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_list' %}">← {{ t.panel_back_to_list }}</a>
+    {% endif %}
+  </div>
+</div>
+
+<form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-xl-9">
+      <section class="panel-card">
+        <div class="panel-card-body">
+          {% for group in groups %}
+            <fieldset class="panel-form-section">
+              <legend>{{ group.title }}</legend>
+              <div class="panel-form-grid">
+                {% for field in group.fields %}
+                  {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="is-full">
+                      <div class="form-check">
+                        {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      </div>
+                      {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                      {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="{% if field.name == 'manufacturer_address' or field.name == 'product_description' or field.name == 'models_text' or field.name == 'test_parameters' or field.name == 'test_standards' or field.name == 'models_csv' %}is-full{% endif %}">
+                      <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}{% if field.field.required %}<span class="panel-required" aria-hidden="true">*</span>{% endif %}
+                      </label>
+                      {{ field }}
+                      {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                      {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endfor %}
+
+          <div class="panel-actions-bar">
+            <button class="btn btn-primary" type="submit">{% if is_edit %}{{ t.panel_save_changes }}{% else %}{{ t.panel_create_certificate }}{% endif %}</button>
+            {% if is_edit %}
+              <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_detail' certificate.pk %}">{{ t.panel_cancel }}</a>
+            {% else %}
+              <a class="btn btn-outline-secondary" href="{% url 'panel:certificate_list' %}">{{ t.panel_cancel }}</a>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-3">
+      <section class="panel-card">
+        <div class="panel-card-body">
+          <h2 class="h6 fw-bold">{{ t.panel_form_help_title }}</h2>
+          <p class="form-text">{{ t.panel_form_help_text }}</p>
+          <ul class="form-text ps-3 mb-0">
+            <li>{{ t.panel_form_help_1 }}</li>
+            <li>{{ t.panel_form_help_2 }}</li>
+            <li>{{ t.panel_form_help_3 }}</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% load static %}<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ t.panel_login_title }} · {{ t.panel_brand_name }}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'img/favicon.png' %}{% endif %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/panel.css' %}">
+</head>
+<body class="panel-login-body">
+  <main class="panel-login-card">
+    <section class="panel-login-aside">
+      <div class="panel-login-brand">
+        <span class="panel-brand-mark" aria-hidden="true">Q</span>
+        <span>
+          <strong>{{ t.panel_brand_name }}</strong>
+          <small>{{ t.panel_brand_sub }}</small>
+        </span>
+      </div>
+      <div>
+        <h1>{{ t.panel_login_headline }}</h1>
+        <p>{{ t.panel_login_headline_text }}</p>
+        <ul class="panel-login-points">
+          <li>{{ t.panel_login_point_1 }}</li>
+          <li>{{ t.panel_login_point_2 }}</li>
+          <li>{{ t.panel_login_point_3 }}</li>
+        </ul>
+      </div>
+      <p style="font-size:12px;color:#9dbdaf;margin:0;">© {{ current_year }} {{ site.site_name }}</p>
+    </section>
+
+    <section class="panel-login-form">
+      <div class="panel-login-lang" role="group" aria-label="{{ t.language }}">
+        <a href="{% url 'set_language' %}?lang=en&next={{ request.get_full_path|urlencode }}" class="{% if current_language == 'en' %}is-active{% endif %}">English</a>
+        <a href="{% url 'set_language' %}?lang=zh-hans&next={{ request.get_full_path|urlencode }}" class="{% if current_language == 'zh-hans' %}is-active{% endif %}">中文</a>
+      </div>
+
+      <h2>{{ t.panel_login_title }}</h2>
+      <p class="panel-subtitle">{{ t.panel_login_subtitle }}</p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'panel:login' %}" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+          {{ form.password }}
+          {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+
+        <button class="btn btn-primary w-100 btn-lg" type="submit">{{ t.panel_login_button }}</button>
+      </form>
+
+      <p class="panel-login-help">{{ t.panel_login_help }}</p>
+      <a class="small" href="{% url 'core:home' %}">← {{ t.panel_public_site }}</a>
+    </section>
+  </main>
+</body>
+</html>

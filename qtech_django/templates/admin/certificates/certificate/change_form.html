@@ -1,0 +1,67 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  {% if change and original %}
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificate_pdf' original.pk 'en' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_pdf }} · English</a>
+    </li>
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificate_pdf' original.pk 'es' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_pdf }} · Español</a>
+    </li>
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificate_pdf' original.pk 'zh-hans' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_pdf }} · 中文</a>
+    </li>
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificate_render' original.pk 'en' %}?download=1">{{ qtech_t.admin_download_html_en }}</a>
+    </li>
+    <li class="qtech-tool">
+      <a href="{% url 'admin:certificates_certificate_qr' original.pk %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_qr_preview }}</a>
+    </li>
+    <li class="qtech-tool">
+      <form method="post" action="{% url 'admin:certificates_certificate_regenerate_token' original.pk %}" class="qtech-inline-form">
+        {% csrf_token %}
+        <button type="submit" class="qtech-link-button" onclick="return confirm('{{ qtech_t.admin_regenerate_token_confirm|escapejs }}');">{{ qtech_t.admin_regenerate_token }}</button>
+      </form>
+    </li>
+  {% endif %}
+{% endblock %}
+
+{% block after_field_sets %}
+  {{ block.super }}
+  {% if change and original %}
+    <section class="qtech-help-panel">
+      <h2>{{ qtech_t.admin_certificate_preview }}</h2>
+      <p>{{ qtech_t.admin_certificate_help }}</p>
+
+      <h3>{{ qtech_t.admin_download_pdf }}</h3>
+      <div class="qtech-help-actions">
+        <a class="qtech-btn qtech-btn-primary" href="{% url 'admin:certificates_certificate_pdf' original.pk 'en' %}?download=1">{{ qtech_t.admin_download_pdf }} · English</a>
+        <a class="qtech-btn qtech-btn-primary" href="{% url 'admin:certificates_certificate_pdf' original.pk 'es' %}?download=1">{{ qtech_t.admin_download_pdf }} · Español</a>
+        <a class="qtech-btn qtech-btn-primary" href="{% url 'admin:certificates_certificate_pdf' original.pk 'zh-hans' %}?download=1">{{ qtech_t.admin_download_pdf }} · 中文</a>
+      </div>
+      <p class="qtech-muted">{{ qtech_t.admin_pdf_help }}</p>
+
+      <h3>{{ qtech_t.admin_download_html }}</h3>
+      <div class="qtech-help-actions">
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'en' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_html }} · English</a>
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'es' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_html }} · Español</a>
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'zh-hans' %}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_preview_html }} · 中文</a>
+      </div>
+      <div class="qtech-help-actions">
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'en' %}?download=1">{{ qtech_t.admin_download_html_en }}</a>
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'es' %}?download=1">{{ qtech_t.admin_download_html_es }}</a>
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_render' original.pk 'zh-hans' %}?download=1">{{ qtech_t.admin_download_html_zh }}</a>
+      </div>
+
+      <h3>{{ qtech_t.admin_actions }}</h3>
+      <div class="qtech-help-actions">
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_qr' original.pk %}?download=1">{{ qtech_t.admin_download_qr }}</a>
+        <a class="qtech-btn" href="{% url 'admin:certificates_certificate_models_csv_template' %}">{{ qtech_t.admin_models_csv_template }}</a>
+        <a class="qtech-btn" href="{{ original.validation_url }}" target="_blank" rel="noopener noreferrer">{{ qtech_t.admin_open_validation }} &#8599;</a>
+      </div>
+      <p class="qtech-muted">{{ qtech_t.admin_certificate_html_help }}</p>
+    </section>
+  {% endif %}
+{% endblock %}
